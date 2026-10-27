@@ -1,0 +1,36 @@
+GarbageGo/
+│
+├── AGENTS.md              # Claude / Codex 共用規範
+├── CLAUDE.md              # Claude 入口，引用 AGENTS.md
+├── README.md
+├── .gitignore
+│
+├── docs/
+│   ├── plans/             # Superpowers 開發計畫
+│   ├── specs/             # 需求規格
+│   └── architecture/      # 架構設計文件
+│       └── project-structure.txt   # 本檔：專案資料夾架構
+│
+├── .agents/
+│   └── skills/            # Codex 讀取的技能（Claude 不讀這裡）
+│       ├── SUPERPOWERS-LICENSE    # superpowers 的 MIT 授權
+│       ├── SUPERPOWERS-VERSION    # 複製來源的版本（bb92a77）
+│       ├── brainstorming/
+│       ├── diagnosing-superpowers/
+│       ├── dispatching-parallel-agents/
+│       ├── executing-plans/
+│       ├── finishing-a-development-branch/
+│       ├── receiving-code-review/
+│       ├── requesting-code-review/
+│       ├── subagent-driven-development/
+│       ├── systematic-debugging/
+│       ├── test-driven-development/
+│       ├── using-git-worktrees/
+│       ├── using-superpowers/
+│       ├── verification-before-completion/
+│       ├── writing-plans/
+│       └── writing-skills/
+│
+└── .claude/
+    ├── settings.json      # 啟用 superpowers plugin（打開專案時提示安裝）
+    └── skills/            # Claude 專屬技能（選用）

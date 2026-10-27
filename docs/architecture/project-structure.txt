@@ -9,7 +9,8 @@ GarbageGo/
 │   ├── plans/             # Superpowers 開發計畫
 │   ├── specs/             # 需求規格
 │   └── architecture/      # 架構設計文件
-│       └── project-structure.txt   # 本檔：專案資料夾架構
+│       ├── project-structure.txt   # 本檔：專案資料夾架構
+│       └── modular-monolith.md     # 初版模組化單體架構草稿
 │
 ├── .agents/
 │   └── skills/            # Codex 讀取的技能（Claude 不讀這裡）

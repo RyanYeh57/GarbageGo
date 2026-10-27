@@ -83,7 +83,9 @@ GarbageGo 預計整合垃圾車動態資料、收運點資料、GIS 空間分析
 
 ## 3. Proposed System Architecture
 
-> **Status:** Proposed；以下為邏輯模組，不代表已決定實際部署方式或程式框架。
+> **Status:** Proposed / Pending Approval；初步方向為模組化單體架構與 PostgreSQL/PostGIS，尚未完成正式技術選型核准。
+>
+> 詳細架構草稿請參考 [`docs/architecture/modular-monolith.md`](docs/architecture/modular-monolith.md)。
 
 ```mermaid
 flowchart TD
@@ -113,6 +115,14 @@ flowchart TD
 | Recommendation Engine | 計算可行性、排序、備案 | 不只依最近距離排序 | Planned |
 | Domain Knowledge / RAG | 檢索清運規則、例外與來源 | RAG 不取代 ETA 預測模型 | Planned |
 | User Interface | 文字對話、地圖、風險提示 | UI 技術待選型 | Planned |
+
+### 3.2 Initial Architecture Direction
+
+第一版初步採用**模組化單體架構（Modular Monolith）+ PostgreSQL/PostGIS**。系統先以一個可部署的 Backend 應用程式承載 Data Acquisition、GIS、ETA、Recommendation 與 API 等模組，模組之間透過明確介面溝通，但不預先拆成微服務。
+
+PostgreSQL 預計儲存路線、車輛、收運點、排程與觀測資料；PostGIS 預計支援附近收運點、車輛位置與使用者位置的空間查詢。官方 API 與歷史 JSON 預計轉換成同一套標準資料模型，並保留原始 JSON 以便追查與重新處理。
+
+這是 Proposal 階段的架構方向，不代表相關功能已實作，也不代表所有技術選型已完成核准。正式採用前，仍需驗證資料欄位、座標系統、資料量、查詢需求與部署成本。
 
 ## 4. Data Sources & Data Flow
 
@@ -262,14 +272,15 @@ RAG 的任務是**檢索與引用規則**，不是取代 GIS 路徑計算或 ETA
 
 | Decision | Current State | Selection Criteria |
 |---|---|---|
-| Backend framework | Undecided | 熟悉度、API 開發效率、ML 整合、部署 |
+| Application architecture | Proposed: Modular Monolith | 模組邊界、測試性、部署與未來拆分成本 |
+| Backend framework | Candidate: Python + FastAPI | 熟悉度、API 開發效率、ML 整合、部署 |
 | Frontend / Map | Undecided | 地圖互動、RWD、授權與維護 |
-| Database / Spatial DB | Undecided | 空間查詢、資料規模、部署成本 |
+| Database / Spatial DB | Proposed: PostgreSQL + PostGIS | 空間查詢、資料規模、部署成本 |
 | ETA modeling stack | Undecided | 資料品質、Baseline 成效、可解釋性 |
 | Walking route provider | Undecided | 台中涵蓋率、步行路網、費用與配額 |
 | LLM provider / orchestration | Undecided | Tool Calling、成本、測試能力 |
 | RAG / vector store | Undecided | 是否確有檢索需求、資料量、維護成本 |
-| Deployment | Undecided | Demo 需求、成本、API 金鑰安全 |
+| Deployment | Proposed: Single application + database | Demo 需求、成本、API 金鑰安全 |
 
 **Decision Rule:** 重大技術選型先進行 Brainstorming，確認後再更新本表及對應 Specification；遵循 KISS / YAGNI，避免過早引入大型依賴。
 

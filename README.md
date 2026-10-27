@@ -76,7 +76,12 @@ flowchart TD
 | LLM Agent / Orchestrator | 理解需求、協調工具與說明結果 | Planned |
 | User Interface | 呈現地圖、推薦結果與風險提示 | Planned |
 
-完整設計請參考 [DESIGN.md](DESIGN.md)。
+初版預計採用**模組化單體架構（Modular Monolith）+ PostgreSQL/PostGIS**。這是 Proposal 階段的架構方向，尚未完成正式技術選型核准或實作。
+
+詳細架構草稿請參考：
+
+- [System Design](DESIGN.md)
+- [Modular Monolith Architecture](docs/architecture/modular-monolith.md)
 
 ## Data Sources
 

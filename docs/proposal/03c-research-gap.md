@@ -1,6 +1,6 @@
 # Research Gap
 
-> **負責人：** C
+> **負責人：** 李安爵（C）
 > **狀態：** 初稿 v2。依 `03a-related-work-ai.md`（B，`proposal/related-work-ai` branch 版本）、`03b-related-work-domain.md` 與 `docs/research/opendata-api-check.md`（以下簡稱「API 實測」）撰寫；全員討論後定稿。
 > **結構：** Existing Research → Limitations → Research Gap → Our Project
 

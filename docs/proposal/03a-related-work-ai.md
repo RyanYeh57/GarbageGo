@@ -1,6 +1,6 @@
 # Related Work：AI 與相關技術
 
-本章整理與 GarbageGo 相關的六篇研究，涵蓋垃圾車與公車預估抵達時間（Estimated Time of Arrival，ETA）、GIS 步行路線與旅行時間，以及大型語言模型（Large Language Model，LLM）的工具使用與 Agent 流程。下文的 Findings 是原作者在各自實驗條件下報告的結果，未經本專題重現；對 GarbageGo 的應用建議則是本章根據文獻與現有設計所作的分析。GarbageGo 相關功能仍為 Planned，尚無本專題的實驗結果。
+本章整理與 GarbageGo 相關的八篇研究，涵蓋垃圾車與公車預估抵達時間（Estimated Time of Arrival，ETA）、GIS 步行路線與旅行時間，以及大型語言模型（Large Language Model，LLM）的工具使用與 Agent 流程。下文的 Findings 是原作者在各自實驗條件下報告的結果，未經本專題重現；對 GarbageGo 的應用建議則是本章根據文獻與現有設計所作的分析。GarbageGo 相關功能仍為 Planned，尚無本專題的實驗結果。
 
 ## 1. 預估抵達時間與車輛行程預測
 
@@ -28,9 +28,13 @@ Zhang 等人 [B2] 使用中國南昌市 220 路公車於 2021 年 10 月 20 日�
 
 另需注意，原文 §2.3 Step 3 寫到以 LSTM 的「test set mean square error」作為 IWOA 的適應值。依此文字，文中所稱測試集參與了超參數搜尋，因此不能僅憑報告的指標認定模型已通過完全獨立於調參程序的測試。本章將此視為評估設計的限制，不據此判定論文資料虛假；GarbageGo 後續應依專案規範分離訓練、驗證及最終測試資料，避免資料洩漏。
 
+Rawat 等人 [B8] 使用紐約市 MTA SIRI 公車 GPS 資料，選取班次最多的 20 條路線，以加入路線嵌入（route embedding）的 LSTM 預測到站時間，並將預測器放入多代理模擬，讓公車自行決定是否跳站，以減少車輛串連（bus bunching）。作者以各路線的歷史平均 ETA 作為 Baseline，報告 LSTM 的 MAE 約 2.02 分鐘，較 Baseline 的 2.83 分鐘改善約 28.5% [B8, §3.2, §3.10, §4.1]。
+
+此研究與 GarbageGo 的關聯，在於它以歷史平均作為比較基準，與 `DESIGN.md` 規劃的 Historical Statistical Baseline 類似，也處理了 GPS 輪詢缺口的補值問題。但它仍是公車情境；作者亦指出模型只適用於已訓練的路線，序列開頭觀測不足時 ETA 準確度可能較低 [B8]。此外，原文 §3.10 同時描述「依日期排序以避免時間資料洩漏」與「依路線分層切分」，本章無法從文字確認兩者如何搭配，因此對其時間外推能力仍保留判斷。
+
 ### 1.4 小結：文獻比較與對 GarbageGo 的啟示
 
-論文 [B1] 以新竹垃圾車歷史行程為基礎，情境較接近本專題；論文 [B2] 則以公車 GPS 及 LSTM 探討時序預測。兩者提供不同複雜度的參考，但 [B2] 的單日資料與測試集調參方式限制了其結果的外推。GarbageGo 預計先評估排程、歷史統計及距離／速度等 Baseline，再視資料條件比較其他方法；這些方法目前仍屬規劃，尚未完成實驗。
+論文 [B1] 以新竹垃圾車歷史行程為基礎，情境較接近本專題；論文 [B2]、[B8] 則以公車 GPS 及 LSTM 探討時序預測，[B8] 並以歷史平均作為 Baseline。這些研究提供不同複雜度的參考，但 [B2] 的單日資料與測試集調參方式、[B8] 的路線限定與資料切分描述，都限制了結果的外推。GarbageGo 預計先評估排程、歷史統計及距離／速度等 Baseline，再視資料條件比較其他方法；這些方法目前仍屬規劃，尚未完成實驗。
 
 推薦時，垃圾車 ETA 還需結合使用者步行時間、資料新鮮度及安全緩衝。若 GPS 過期、站點關聯不明或真實到點時間不足，系統應呈現限制，不能把排程時間視為已驗證的即時預測。
 
@@ -78,11 +82,19 @@ Yao 等人 [B6] 提出 ReAct，讓語言模型交替產生推理與行動，並�
 
 ReAct 對 GarbageGo 的參考在於：面對使用者查詢時，Agent 可依需求選擇工具、取得結果並調整後續處理。不過，原研究未驗證垃圾清運、臺中資料或本專案的推薦流程；其分析也顯示推理錯誤、重複行動及搜尋結果不足可能導致失敗。因此這是可供參考的流程概念，不代表本專案已採用 ReAct，也不保證每次工具調用都正確。
 
-### 3.4 小結：文獻比較與對 GarbageGo 的啟示
+### 3.4 LLMAP：LLM 理解需求、演算法規劃路線
 
-Toolformer [B5] 著重模型如何學習使用 API，ReAct [B6] 則探討交替進行推理、行動及觀察。GarbageGo 可參考其概念，讓 LLM 使用外部模組的結果生成說明；工具失敗、資料過期或資訊不足時，仍需要由系統明確處理並回報限制。兩篇均未驗證本專題情境，LLM Provider、Agent 實作方式與是否使用特定框架均尚未定案。
+Yuan 等人 [B7] 指出，直接讓 LLM 作為 Agent 規劃路線時，難以處理大量地圖與 POI 資料；純圖搜尋方法則不易理解自然語言偏好。LLMAP 因此讓 LLM 擔任 Parser，從使用者文字中擷取要去的 POI 類型、時間限制、任務先後關係與偏好權重，再交由 MSGS 圖搜尋演算法，在時間限制、營業時間與任務順序等條件下計算路線。作者以涵蓋 14 個國家、27 個城市的 1,000 筆路線請求評估十餘種 LLM，報告 LLMAP 在多項指標上優於 LLM-as-Agent 方法 [B7, Abstract, §1, §5]。
 
-綜合本章六篇文獻，既有研究分別提供垃圾車／公車 ETA、路網旅行時間與 LLM 工具協作方法；它們的研究目標與評估情境不同，尚不能直接構成本專題「使用者現在走向哪個收運點較可行」的驗證證據。因此，本章提出的研究切入點，是依 `DESIGN.md` 將車輛 ETA、步行時間、資料新鮮度與安全緩衝整合為候選點可行性判斷，再規劃與最近點策略等 Baseline 比較。這是本章根據所選文獻作出的初步歸納，並非證明整個領域從未研究類似問題；完整 Research Gap 仍應由 C 的領域章節與 A 的整合內容共同確認。
+原文 §4.4 另指出，LLM 擷取 POI、時間限制與任務關係的表現較好，但從文字推估數值型偏好權重時較不精確，例如「I am in a hurry」可能對應 0.7 至 0.9 的不同權重；§4.5 則展示模糊或歧義指令造成的誤解，需透過對話修正。作者在 Limitations 說明，POI 類型增加時，MSGS 的運算量會顯著上升。
+
+此研究對 GarbageGo 的參考在於分工方式：LLM 負責理解需求並轉為結構化參數，距離與路線等數值由演算法計算，與 `DESIGN.md` 不讓 LLM 自行推測 ETA 與步行時間的原則一致。§4.4 的結果也提醒，LLM 轉換出的參數仍需檢查。不過 LLMAP 處理的是一般 POI 行程規劃，未涉及垃圾車 ETA 或收運點可行性，不能作為本專題流程的驗證。
+
+### 3.5 小結：文獻比較與對 GarbageGo 的啟示
+
+Toolformer [B5] 著重模型如何學習使用 API，ReAct [B6] 則探討交替進行推理、行動及觀察；LLMAP [B7] 進一步示範由 LLM 解析需求、由專門演算法完成路線計算的分工。GarbageGo 可參考其概念，讓 LLM 使用外部模組的結果生成說明；工具失敗、資料過期或資訊不足時，仍需要由系統明確處理並回報限制。三篇均未驗證本專題情境，LLM Provider、Agent 實作方式與是否使用特定框架均尚未定案。
+
+綜合本章八篇文獻，既有研究分別提供垃圾車／公車 ETA、路網旅行時間與 LLM 工具協作方法；它們的研究目標與評估情境不同，尚不能直接構成本專題「使用者現在走向哪個收運點較可行」的驗證證據。因此，本章提出的研究切入點，是依 `DESIGN.md` 將車輛 ETA、步行時間、資料新鮮度與安全緩衝整合為候選點可行性判斷，再規劃與最近點策略等 Baseline 比較。這是本章根據所選文獻作出的初步歸納，並非證明整個領域從未研究類似問題；完整 Research Gap 仍應由 C 的領域章節與 A 的整合內容共同確認。
 
 ## 4. Article Summary Table
 
@@ -94,6 +106,8 @@ Toolformer [B5] 著重模型如何學習使用 API，ReAct [B6] 則探討交替�
 | [B4] | 2023 | 規劃考慮使用者舒適度的步行路線 | 不適用；GIS 路網與步行舒適度計算 | 人行道、路口、溫度、陰影及使用者偏好 | 西班牙馬德里空間與環境資料 | 提出人行道路網及依條件產生步行路線的方法 | 重點為舒適度；部分樹木遮蔭與穿越資訊不足，非專門驗證垃圾收運點步行時間 |
 | [B5] | 2023 | 讓語言模型學習使用外部 API | 自我監督資料產生、篩選與 GPT-J 微調 | 計算、搜尋、問答等一般工具使用 | CCNet 子集；評估含 LAMA、算術、問答、MLQA 等任務 | 工具使用改善多項零樣本任務，但非所有任務皆優於比較模型 | 未針對垃圾清運驗證；原方法不支援串接工具與互動式工具使用 |
 | [B6] | 2023 | 結合語言模型推理與環境行動 | ReAct 提示方法 | 知識檢索、問答及互動決策 | HotpotQA、FEVER、ALFWorld、WebShop | 作者展示交替推理與行動在多項任務中的效果 | 可能出現推理錯誤、重複行動或搜尋資訊不足；未針對本專案驗證 |
+| [B7] | 2025 | 依自然語言偏好規劃多目標路線 | LLM-as-Parser 擷取需求與偏好，搭配 MSGS 圖搜尋 | POI、營業時間、時間限制與任務先後關係 | 14 國 27 城市共 1,000 筆路線請求 | 作者報告優於 LLM-as-Agent 方法；LLM 推估數值型偏好權重較不精確 | 一般 POI 行程，非垃圾清運；POI 類型增加時運算量顯著上升 |
+| [B8] | 2026 | 預測公車到站時間並減少車輛串連 | 路線嵌入 LSTM 搭配多代理模擬 | 公車路線、站點、GPS 輪詢缺口與班距 | 紐約市 MTA SIRI 公車 GPS，20 條路線 | 作者報告 MAE 約 2.02 分鐘，較歷史平均 Baseline 改善約 28.5% | 公車情境；只適用已訓練路線；資料切分描述不完全明確 |
 
 ## 參考文獻
 
@@ -109,9 +123,13 @@ Toolformer [B5] 著重模型如何學習使用 API，ReAct [B6] 則探討交替�
 
 [B6] S. Yao et al., “ReAct: Synergizing Reasoning and Acting in Language Models,” in *International Conference on Learning Representations*, 2023. [論文原文](https://arxiv.org/abs/2210.03629).
 
+[B7] L. Yuan, D.-J. Han, C. G. Brinton, and S. Brunswicker, “LLMAP: LLM-Assisted Multi-Objective Route Planning with User Preferences,” in *Findings of the Association for Computational Linguistics: EMNLP 2025*, 2025, pp. 7866–7894. [https://doi.org/10.18653/v1/2025.findings-emnlp.416](https://doi.org/10.18653/v1/2025.findings-emnlp.416).
+
+[B8] S. Rawat, A. Abaidullina, D. Alimbayeva, D. Kumar, and P. Kumar, “Real-time bus arrival prediction and bus bunching prevention using a multi-agent LSTM approach,” *Frontiers in Built Environment*, vol. 12, 2026. [https://doi.org/10.3389/fbuil.2026.1894212](https://doi.org/10.3389/fbuil.2026.1894212).
+
 ## 附錄：原文核對紀錄（供組內審閱）
 
-核對日期：2026-11-06。來源為組員提供的六份本機 PDF，並以出版頁面輔助核對書目；下表頁碼為 PDF 從第一頁起算的頁序。核對可確認本章轉述是否有原文支持，不能取代原研究實驗重現或組員親自閱讀。本章未重製原文圖表與原始資料；若後續使用圖片或重新散布資料，需另確認各自授權。
+核對日期：2026-11-06。[B1]–[B6] 來源為組員提供的六份本機 PDF；[B7] 為 ACL Anthology 公開 PDF，[B8] 為 Frontiers 網站全文頁；並以出版頁面與 Crossref 輔助核對書目；下表頁碼為 PDF 從第一頁起算的頁序。核對可確認本章轉述是否有原文支持，不能取代原研究實驗重現或組員親自閱讀。本章未重製原文圖表與原始資料；若後續使用圖片或重新散布資料，需另確認各自授權。
 
 | Ref. | 主要核對位置 | 轉述範圍及使用限制 |
 |---|---|---|
@@ -121,5 +139,7 @@ Toolformer [B5] 著重模型如何學習使用 API，ReAct [B6] 則探討交替�
 | [B4] | PDF 第 1、9–10 頁；Abstract、Discussion、Conclusion | 舒適度路線及樹木／穿越資料限制；第 1 頁標示 CC BY-NC-ND 4.0 |
 | [B5] | PDF 第 1–5、7、9–10 頁；§2–4、§6 | 自我監督工具學習、評估與串接限制；本章未另確認圖表／全文重製授權 |
 | [B6] | PDF 第 1、3、5–6 頁；§2、§3.3 | 交替推理與行動、任務與失敗分析；本章未另確認圖表／全文重製授權 |
+| [B7] | PDF 第 1–2、8–10 頁（論文頁碼 7866–7867、7873–7875）；Abstract、§1、§4.4、§4.5、§5、Limitations | LLM-as-Parser 與 MSGS 分工、評估規模、數值偏好估計誤差及運算量限制；本章未另確認圖表／全文重製授權 |
+| [B8] | Frontiers 全文頁；Abstract、§3.2、§3.10、§4.1、文末限制與未來工作段落 | 紐約公車 GPS、LSTM、歷史平均 Baseline、MAE 及資料切分文字；頁面標示 CC BY，資料可用性聲明表示其他詢問需洽通訊作者 |
 
-本章只承擔 B 的技術文獻部分。整份 Related Work 是否達到約一半 AI Technology、約一半 Domain Know-how，以及完整的 Existing Research → Limitations → Research Gap → Our Project，需待合併 C 的章節後再驗收。老師對 2025–2026 證據的優先建議位於研究動機部分；本章六篇較早技術文獻不取代 Introduction 所需的近期證據。
+本章只承擔 B 的技術文獻部分。整份 Related Work 是否達到約一半 AI Technology、約一半 Domain Know-how，以及完整的 Existing Research → Limitations → Research Gap → Our Project，需待合併 C 的章節後再驗收。老師對 2025–2026 證據的優先建議位於研究動機部分；本章 [B7]、[B8] 雖為 2025–2026 年文獻，但屬技術參考，同樣不取代 Introduction 所需的近期證據。

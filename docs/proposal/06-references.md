@@ -2,17 +2,17 @@
 
 > 依整合草稿首次引用順序編號；括號內為原章節代號，供核對。資料與原文仍需逐篇複核。
 
-[1] 臺中市政府環境保護局，〈115年春節垃圾收運安排出爐　初一、初三採定時定點　初四恢復正常清運〉，2026-01-26。<https://www.epb.taichung.gov.tw/3198939/post> （原代號：I4、D9）
+[1] 臺中市政府環境保護局，〈台中「垃圾清運大車隊」服務再升級！ APP動態查詢更直覺　網站同步推動無障礙優化〉，臺中市政府全球資訊網市政新聞，2026-09-29。<https://www.taichung.gov.tw/8868/8872/9962/3379879> （原代號：I1、D5）
 
 [2] 臺中市政府環境保護局，「臺中市垃圾清運及資源回收車動態資訊」，政府資料開放平臺。<https://data.gov.tw/dataset/83558> （原代號：I9、D3）
 
 [3] 臺中市政府環境保護局，「臺中市定時定點垃圾收運地點」，政府資料開放平臺。<https://data.gov.tw/dataset/84004> （原代號：I10、D4）
 
-[4] 臺中市政府環境保護局，〈台中「垃圾清運大車隊」服務再升級！ APP動態查詢更直覺　網站同步推動無障礙優化〉，臺中市政府全球資訊網市政新聞，2026-09-29。<https://www.taichung.gov.tw/8868/8872/9962/3379879> （原代號：I1、D5）
+[4] Taichung City Government，「臺中垃圾清運大車隊」，App Store（臺灣），iOS 版本 2.63（2026-10-12）。評分與評論於 2026-11-07 經 iTunes Search API 與評論 RSS 擷取，擷取方法、統計與評論原文保存於 `docs/research/app-review-snapshot-2026-11-07.md`；本組實際使用 Android 版 2.99。<https://apps.apple.com/tw/app/id935569593> （原代號：I2）
 
-[5] Taichung City Government，「臺中垃圾清運大車隊」，App Store（臺灣），iOS 版本 2.63（2026-10-12）。評分與評論於 2026-11-07 經 iTunes Search API 與評論 RSS 擷取，擷取方法、統計與評論原文保存於 `docs/research/app-review-snapshot-2026-11-07.md`；本組實際使用 Android 版 2.99。<https://apps.apple.com/tw/app/id935569593> （原代號：I2）
+[5] 臺中市政府，「臺中垃圾清運大車隊」，Google Play。評分（擷取當下顯示 2.8 顆星）與引用評論為本組 2026-11-07 截圖，見 `docs/research/app-review-snapshot-2026-11-07.md` 圖 A。<https://play.google.com/store/apps/details?id=tw.gis.tgcar> （原代號：I3）
 
-[6] 臺中市政府，「臺中垃圾清運大車隊」，Google Play。評分（擷取當下顯示 2.8 顆星）與引用評論為本組 2026-11-07 截圖，見 `docs/research/app-review-snapshot-2026-11-07.md` 圖 A。<https://play.google.com/store/apps/details?id=tw.gis.tgcar> （原代號：I3）
+[6] 臺中市政府環境保護局，〈115年春節垃圾收運安排出爐　初一、初三採定時定點　初四恢復正常清運〉，2026-01-26。<https://www.epb.taichung.gov.tw/3198939/post> （原代號：I4、D9）
 
 [7] 臺中市政府環境保護局，「國定假日定點班表」，臺中垃圾清運大車隊即時查詢系統。頁面載明 115 年 1 月 1 日、2 月 17 日、2 月 19 日、2 月 28 日、4 月 4 日、5 月 1 日、6 月 19 日、9 月 25 日、9 月 28 日、10 月 10 日、12 月 25 日「停止沿街垃圾收運，當天改為定時定點服務」。<https://cleaner.epb.taichung.gov.tw/schedule.aspx> （原代號：I5）
 

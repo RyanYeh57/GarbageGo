@@ -1,6 +1,6 @@
 # P1 技術選型決策單
 
-> **狀態：** Draft / Pending Decision（待組員決定）
+> **狀態：** Decided（D1–D5 已於 2026-11-22 全部決定；部分事項仍待查證，見各節）
 > **建立日期：** 2026-11-13
 > **對應：** `DESIGN.md` §10 Technology Decisions、工作清單 P1
 > **用途：** 列出開工前必須先定的技術選項。每題最多兩個選項，附建議。決定後填「決定」欄，再同步更新 `DESIGN.md` §10。
@@ -9,11 +9,11 @@
 
 | # | 要決定什麼 | 選項 A | 選項 B | 建議 | 決定 | 卡住的工作 |
 |---|---|---|---|---|---|---|
-| D1 | 地圖組合（底圖＋步行路線） | 台灣底圖組合：MapLibre（Android）+ 國土測繪中心「臺灣通用電子地圖」+ Valhalla 步行路線（OSM 路網） | Google 組合：Maps SDK for Android + Routes API | **A** | ☐ A ☐ B | W3、W9 |
+| D1 | 地圖組合（底圖＋步行路線） | 台灣底圖組合：MapLibre（Android）+ 國土測繪中心「臺灣通用電子地圖」+ Valhalla 步行路線（OSM 路網） | Google 組合：Maps SDK for Android + Routes API | **A** | ☑ **A**（2026-11-22） | W3、W9 |
 | D2 | 地址轉座標（Geocoding） | ~~TGOS 批次比對~~ | ~~Nominatim~~ | — | ☑ **已定：臺中市 GIS 門牌資料本地比對為主，TGOS 為備援**（2026-11-16） | W2（最卡） |
 | D3 | 前端框架 | ~~React + Vite~~ | ~~Vue + Vite~~ | — | ☑ **已定：Android App（Jetpack Compose + MVVM）**（2026-11-16） | W9 |
-| D4 | LLM 供應商 | Claude API（Haiku 5.5） | Gemini API 免費額度 | **A** | ☐ A ☐ B | W7 |
-| D5 | 後端與資料庫（確認既有方向） | 照舊：Python + FastAPI + PostgreSQL/PostGIS，Docker Compose | 改用其他 | **A** | ☐ A ☐ B | P2、全部 |
+| D4 | LLM 供應商 | Claude API（Haiku 5.5） | Gemini API 免費額度 | **A** | ☑ **A**（2026-11-22） | W7 |
+| D5 | 後端與資料庫（確認既有方向） | 照舊：Python + FastAPI + PostgreSQL/PostGIS，Docker Compose | 改用其他 | **A** | ☑ **A**（2026-11-22） | P2、全部 |
 
 **不在 P1 決定（YAGNI，等資料再說）：**
 
@@ -39,7 +39,7 @@
 | 路網品質 | OSM 路網。台中車站一帶實測完整；郊區可能較不完整（Chen 2026 抽樣研究），**沒有找到台中人行道完整度的數據** | 通常較完整 |
 | 風險 | 示範機可能變慢或停用；`maplibre-compose` 仍是 0.x 版，minor 版更新可能不相容，**版本要鎖死** | 綁定 Google，D2 也必須用 Google |
 
-**建議 A。** 理由：
+**已定 A（2026-11-22）。** 理由：
 
 - 底圖和步行路線都在台中實測過，可以用。
 - 免費、不用申請，也不會被 Google 條款綁住 D2。
@@ -152,9 +152,7 @@
 | Tool Calling | 支援 | 支援（免費額度是否可用未確認） |
 | 風險 | 要有人出一點錢 | 開發和 Demo 時可能因為額度用完而卡住；Gemini 2.5 系列 2026-12-01 起改導到新模型 |
 
-**建議 A**，理由是免費額度太低，會卡開發和 Demo。
-
-如果大家都不想出錢，選 B，但要先實測額度。
+**已定 A：Claude API（2026-11-22）。** 理由是 Gemini 免費額度太低，會卡開發和 Demo。價格與模型 ID 在 W7 申請 Key 時再到官方頁面確認一次。
 
 > 揭露：本文件由 Claude 協助撰寫，建議 A 可能有偏向疑慮；上表數字均附來源，請自行判斷。
 
@@ -170,9 +168,7 @@
 
 `DESIGN.md` §3.2、§10 已提出：Modular Monolith（模組化單體，一個後端程式）＋ Python + FastAPI ＋ PostgreSQL/PostGIS，部署用單一應用程式加資料庫。
 
-**建議照舊（A）。** 補一點：用 Docker Compose 一鍵啟動後端和資料庫，方便 4 個人環境一致。
-
-如果後端組員不熟 Python，請在這題提出來。改語言會影響 ETA 和資料分析（RD 通常用 Python）。
+**已定照舊（A，2026-11-22）。** 補一點：用 Docker Compose 一鍵啟動後端和資料庫，方便 4 個人環境一致。
 
 ---
 
@@ -187,7 +183,7 @@
 | 做 MapLibre + EMAP 圖磚的最小 Android 試作，確認 `tileSize` 與出處標示（D1 選 A 時） | 前端（Android） | W9 開工前 |
 | 申請 LLM API Key | 全端 | W7 前 |
 | 把 Key 名稱寫進 `.env.example`（不放真的 Key） | 後端 | P2 |
-| 更新 `DESIGN.md` §10 與 Change Log | 主導決定的人 | 決定後 |
+| 更新 `DESIGN.md` §10 與 Change Log | 主導決定的人 | ✅ 2026-11-22 已更新 |
 
 ## 7. 資料來源（核對日期 2026-11-13）
 

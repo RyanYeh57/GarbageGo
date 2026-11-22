@@ -51,7 +51,7 @@ LLM Agent 負責理解使用者需求、協調工具與說明結果；GIS、ETA 
 
 ```mermaid
 flowchart TD
-    U[User / Web App] --> A[LLM Agent / Orchestrator]
+    U[User / Android App] --> A[LLM Agent / Orchestrator]
     A --> G[GIS Engine]
     A --> E[ETA Engine]
     A --> R[Recommendation Engine]
@@ -76,7 +76,18 @@ flowchart TD
 | LLM Agent / Orchestrator | 理解需求、協調工具與說明結果 | Planned |
 | User Interface | 呈現地圖、推薦結果與風險提示 | Planned |
 
-初版預計採用**模組化單體架構（Modular Monolith）+ PostgreSQL/PostGIS**。這是 Proposal 階段的架構方向，尚未完成正式技術選型核准或實作。
+初版採用**模組化單體架構（Modular Monolith）+ PostgreSQL/PostGIS**，尚未實作。
+
+P1 技術選型已於 2026-11-22 決定（細節見 [`docs/architecture/p1-tech-selection.md`](docs/architecture/p1-tech-selection.md)）：
+
+| 項目 | 選擇 |
+|---|---|
+| Client | Android App（Jetpack Compose + MVVM） |
+| 地圖 | MapLibre + 國土測繪中心「臺灣通用電子地圖」 |
+| 步行路線 | Valhalla pedestrian（OSM 路網） |
+| Geocoding | 臺中市 GIS 門牌本地比對為主，TGOS 備援 |
+| LLM | Claude API |
+| Backend / DB | Python + FastAPI + PostgreSQL/PostGIS（Docker Compose） |
 
 詳細架構草稿請參考：
 
@@ -198,7 +209,7 @@ GarbageGo/
 
 ## How to Run
 
-目前尚未提供可執行的 Backend、Frontend 或資料匯入服務。
+目前尚未提供可執行的 Backend、Android App 或資料匯入服務。
 
 正式實作後，本節將補充：
 
@@ -206,7 +217,7 @@ GarbageGo/
 2. 設定 `.env`。
 3. 匯入官方與歷史資料。
 4. 啟動 Backend API。
-5. 啟動 Web UI。
+5. 建置並安裝 Android App。
 6. 執行測試與驗證流程。
 
 ## Demo
@@ -255,7 +266,7 @@ GarbageGo/
 
 - 官方資料更新頻率可能限制即時 ETA 精度。
 - 目前尚未確認所有路線、車輛與收運點能否可靠對應。
-- 尚未確認步行路徑服務與步行時間的資料來源。
+- 步行路線已選用 Valhalla（OSM 路網），但台中人行道完整度與 matrix 一次算多點尚未驗證。
 - 歷史資料仍需要進行清理、驗證與時間切分。
 - 沒有足夠資料時，系統必須顯示不確定性，而不是產生精確但沒有依據的結果。
 
@@ -266,7 +277,7 @@ GarbageGo/
 - 建立 GIS 與 PostGIS 查詢功能。
 - 實作 ETA Baseline 並建立測試資料集。
 - 實作候選收運點推薦與備案邏輯。
-- 加入 Web UI 與地圖呈現。
+- 開發 Android App 與地圖呈現。
 - 視資料品質評估是否加入 Machine Learning。
 - 再評估 LLM Tool Calling 與 RAG 的必要性。
 - 完成實驗、比較、限制分析與 Demo。

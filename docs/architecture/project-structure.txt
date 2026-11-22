@@ -10,7 +10,8 @@ GarbageGo/
 │   ├── specs/             # 需求規格
 │   └── architecture/      # 架構設計文件
 │       ├── project-structure.txt   # 本檔：專案資料夾架構
-│       └── modular-monolith.md     # 初版模組化單體架構草稿
+│       ├── modular-monolith.md     # 初版模組化單體架構草稿
+│       └── backend-architecture.md # v1 實作版後端架構（模組介面、資料表、API、部署）
 │
 ├── .agents/
 │   └── skills/            # Codex 讀取的技能（Claude 不讀這裡）

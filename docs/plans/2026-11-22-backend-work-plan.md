@@ -86,6 +86,7 @@
 
 | 想知道 | 看這份 |
 |---|---|
+| **開工前要裝什麼、準備什麼** | `docs/plans/2026-11-22-team-setup-checklist.md` |
 | 系統怎麼設計（模組、資料表、API） | `docs/architecture/backend-architecture.md` |
 | 第 1 週怎麼寫程式（給寫程式的人） | `docs/plans/2026-11-22-week1-backend-foundation.md` |
 | 技術為什麼這樣選 | `docs/architecture/p1-tech-selection.md` |

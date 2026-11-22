@@ -1,8 +1,8 @@
 # GarbageGo — System Design Document
 
-> **Version:** v0.1  
-> **Status:** Initial Draft / Proposed  
-> **Last Updated:** 2026-10-20  
+> **Version:** v0.2  
+> **Status:** Initial Draft / Proposed（P1 技術選型已決定）  
+> **Last Updated:** 2026-11-22  
 > **Project Type:** Domain AI Agent / AIoT / GIS / ETA Prediction  
 > **Scope:** 臺中市垃圾清運收運點查詢與到點可行性推薦
 
@@ -83,13 +83,13 @@ GarbageGo 預計整合垃圾車動態資料、收運點資料、GIS 空間分析
 
 ## 3. Proposed System Architecture
 
-> **Status:** Proposed / Pending Approval；初步方向為模組化單體架構與 PostgreSQL/PostGIS，尚未完成正式技術選型核准。
+> **Status:** Proposed；模組化單體架構與 PostgreSQL/PostGIS 已於 2026-11-22 P1 技術選型確認（見 §10），模組設計尚未實作驗證。
 >
 > 詳細架構草稿請參考 [`docs/architecture/modular-monolith.md`](docs/architecture/modular-monolith.md)。
 
 ```mermaid
 flowchart TD
-    U[User / Web App] --> A[LLM Agent / Orchestrator]
+    U[User / Android App] --> A[LLM Agent / Orchestrator]
     A --> G[GIS Engine]
     A --> E[ETA Engine]
     A --> K[Domain Knowledge / RAG]
@@ -114,7 +114,7 @@ flowchart TD
 | ETA Engine | 估計車輛到達指定收運點的時間 | 模型依資料品質選型；需提供不確定性 | Planned |
 | Recommendation Engine | 計算可行性、排序、備案 | 不只依最近距離排序 | Planned |
 | Domain Knowledge / RAG | 檢索清運規則、例外與來源 | RAG 不取代 ETA 預測模型 | Planned |
-| User Interface | 文字對話、地圖、風險提示 | UI 技術待選型 | Planned |
+| User Interface | 文字對話、地圖、風險提示 | Android App（Jetpack Compose + MVVM），地圖用 MapLibre | Planned |
 
 ### 3.2 Initial Architecture Direction
 
@@ -268,18 +268,22 @@ RAG 的任務是**檢索與引用規則**，不是取代 GIS 路徑計算或 ETA
 - [ ] 完成實驗、限制分析與報告。
 - [ ] 完善 README、DESIGN、Proposal、簡報與 Demo。
 
-## 10. Technology Decisions (Open)
+## 10. Technology Decisions
+
+> P1 選型細節、比較與來源見 [`docs/architecture/p1-tech-selection.md`](docs/architecture/p1-tech-selection.md)（2026-11-22 決定）。
 
 | Decision | Current State | Selection Criteria |
 |---|---|---|
-| Application architecture | Proposed: Modular Monolith | 模組邊界、測試性、部署與未來拆分成本 |
-| Backend framework | Candidate: Python + FastAPI | 熟悉度、API 開發效率、ML 整合、部署 |
-| Frontend / Map | Undecided | 地圖互動、RWD、授權與維護 |
-| Database / Spatial DB | Proposed: PostgreSQL + PostGIS | 空間查詢、資料規模、部署成本 |
-| ETA modeling stack | Undecided | 資料品質、Baseline 成效、可解釋性 |
-| Walking route provider | Undecided | 台中涵蓋率、步行路網、費用與配額 |
-| LLM provider / orchestration | Undecided | Tool Calling、成本、測試能力 |
-| RAG / vector store | Undecided | 是否確有檢索需求、資料量、維護成本 |
+| Application architecture | Decided: Modular Monolith | 模組邊界、測試性、部署與未來拆分成本 |
+| Backend framework | Decided: Python + FastAPI | 熟悉度、API 開發效率、ML 整合、部署 |
+| Client / UI | Decided: Android App（Jetpack Compose + MVVM） | App 只呼叫後端 API，API Key 留在後端 |
+| Map rendering | Decided: MapLibre（`maplibre-compose`）+ 國土測繪中心「臺灣通用電子地圖」 | zoom 16 以上與 App 使用授權待向國土測繪中心確認 |
+| Database / Spatial DB | Decided: PostgreSQL + PostGIS（Docker Compose） | 空間查詢、資料規模、部署成本 |
+| Geocoding | Decided: 臺中市 GIS 門牌本地比對為主，TGOS 備援 | 試跑 95.6% 有座標（Unverified），見 `docs/research/geocoding-local-match-trial.md` |
+| ETA modeling stack | Undecided（W4 Baseline 後決定） | 資料品質、Baseline 成效、可解釋性 |
+| Walking route provider | Decided: Valhalla pedestrian（OSM 路網，FOSSGIS 公開伺服器；備案自架） | 台中涵蓋率、步行路網、費用與配額 |
+| LLM provider / orchestration | Decided: Claude API，官方 SDK tool calling，不用 Agent 框架 | Tool Calling、成本、測試能力 |
+| RAG / vector store | Undecided（W8 選做） | 是否確有檢索需求、資料量、維護成本 |
 | Deployment | Proposed: Single application + database | Demo 需求、成本、API 金鑰安全 |
 
 **Decision Rule:** 重大技術選型先進行 Brainstorming，確認後再更新本表及對應 Specification；遵循 KISS / YAGNI，避免過早引入大型依賴。
@@ -348,3 +352,4 @@ Update documentation and implementation status
 | Version | Date | Changes |
 |---|---|---|
 | v0.1 | 2026-10-20 | 建立初始設計草案；定義研究目標、邏輯架構、資料需求、候選演算法、評估方向與待決策事項 |
+| v0.2 | 2026-11-22 | 完成 P1 技術選型（§10）：Android（Compose + MVVM）、MapLibre + 臺灣通用電子地圖、Valhalla 步行、臺中門牌本地 Geocoding + TGOS 備援、Claude API、FastAPI + PostGIS |

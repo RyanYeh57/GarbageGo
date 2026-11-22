@@ -24,6 +24,14 @@
 | 後端 A | （填） | 資料表、匯入資料、找附近收運點、步行時間、部署主機 |
 | 後端 B | （填） | GPS 收集、判斷車到了沒、預估到達時間（ETA）、評估 |
 
+**API 分工**（第 1 週架構師先全部做成假資料，之後各自換成真的）：
+
+| 誰 | 負責的 API |
+|---|---|
+| 後端 A | `GET /stops/nearby`、`GET /stops/{id}`、`GET /routes/walk` |
+| 後端 B | `GET /health`、`GET /stops/{id}/eta` |
+| 架構師 | `POST /recommendations`、`POST /chat` |
+
 ## 4 週時程
 
 | 週 | 做完要看得到 |

@@ -28,7 +28,7 @@
 在 repo 根目錄，用 PowerShell：
 
 ```powershell
-copy .env.example .env          # 打開 .env，填 POSTGRES_USER、POSTGRES_PASSWO後端 B，和網址裡的 USER:PASS
+copy .env.example .env          # 打開 .env，填 POSTGRES_USER、POSTGRES_PASSWORD，和網址裡的 USER:PASS
 docker compose up -d --build
 curl.exe http://localhost:8000/health
 ```

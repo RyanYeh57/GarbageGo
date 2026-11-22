@@ -25,7 +25,7 @@
 | Task | 一句話 | 誰 |
 |---|---|---|
 | 1 | 後端骨架：能啟動、`/health` 會回應、log 不記使用者位置 | 架構師 |
-| 2 | 定好 API 長什麼樣子，先回假資料 | 架構師 |
+| 2 | 定好 7 支 API 長什麼樣子，先回假資料 | 架構師 |
 | 3 | 建 4 張資料表 | 後端 A |
 | 4 | 把收運點和座標匯進資料庫 | 後端 A |
 | 5 | 把舊的 GPS 匯進資料庫 | 後端 B |
@@ -95,7 +95,7 @@
 | `backend/app/api/health.py` | `GET /health` | 1、5 |
 | `backend/app/api/schemas.py` | ★ 前後端 API 合約（Pydantic） | 2 |
 | `backend/app/api/fixtures.py` | 第 1 週假資料 | 2 |
-| `backend/app/api/{stops,recommendations,routes,chat}.py` | 假資料 endpoints | 2 |
+| `backend/app/api/{stops,recommendations,routes,chat}.py` | 假資料 endpoints（`/stops/{stop_id}/eta` 也放在 `stops.py`） | 2 |
 | `backend/app/modules/ingestion/stops.py` | 84004 + 座標匯入 | 4 |
 | `backend/app/modules/ingestion/gps.py` | GPS 解析與歷史匯入 | 5 |
 | `backend/analysis/weekday_mapping.sql` | `d1`～`d7` 對應分析 | 6 |
@@ -181,7 +181,7 @@ Expected: 4 passed（還沒開資料庫時 `db` 為 `"error"`，測試仍通過�
   - `db`：`postgis/postgis:16-3.4`，`restart: unless-stopped`，volume `pgdata`，掛 `./db/init:/docker-entrypoint-initdb.d`，port `127.0.0.1:5432:5432`，環境變數來自 `.env`。
   - `api`：build `./backend`，`command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --no-access-log`，`env_file: .env`，`depends_on: [db]`，`restart: unless-stopped`，port `127.0.0.1:8000:8000`。
   - `db/init/01-test-db.sql`：`CREATE DATABASE garbagego_test;`
-  - `.env.example`：`POSTGRES_USER=`、`POSTGRES_PASSWO後端 B=`、`POSTGRES_DB=garbagego`、`DATABASE_URL=postgresql+psycopg://USER:PASS@db:5432/garbagego`、`HOST_DATABASE_URL=postgresql+psycopg://USER:PASS@localhost:5432/garbagego`、`TEST_DATABASE_URL=postgresql+psycopg://USER:PASS@localhost:5432/garbagego_test`。
+  - `.env.example`：`POSTGRES_USER=`、`POSTGRES_PASSWORD=`、`POSTGRES_DB=garbagego`、`DATABASE_URL=postgresql+psycopg://USER:PASS@db:5432/garbagego`、`HOST_DATABASE_URL=postgresql+psycopg://USER:PASS@localhost:5432/garbagego`、`TEST_DATABASE_URL=postgresql+psycopg://USER:PASS@localhost:5432/garbagego_test`。
   - `Dockerfile`：`python:3.12-slim`；`pip install -r requirements.lock`，再 `pip install --no-deps .`。
 
 - [ ] **Step 7: 驗證整個環境**
@@ -235,13 +235,14 @@ git commit -m "feat(backend): add FastAPI skeleton with Docker Compose and healt
 
 Endpoints（第 1 週全部回 `fixtures.py` 的資料；`at` 沒給時用現在的臺北時間）：
 
-| Endpoint | 參數 | 回傳 |
-|---|---|---|
-| `GET /stops/nearby` | `lat`、`lon`、`radius`（預設 500，100～2000）、`at` | `list[StopCandidate]` |
-| `GET /stops/{stop_id}` | — | `StopDetail`；不在假資料 → 404 `stop_not_found` |
-| `POST /recommendations` | `RecommendationRequest` | `RecommendationResponse` |
-| `GET /routes/walk` | `from_lat`、`from_lon`、`to_lat`、`to_lon` | `WalkRoute` |
-| `POST /chat` | `ChatRequest` | `ChatResponse`（固定假回答，`tool_results=[]`） |
+| Endpoint | 參數 | 回傳 | 之後換成真的 |
+|---|---|---|---|
+| `GET /stops/nearby` | `lat`、`lon`、`radius`（預設 500，100～2000）、`at` | `list[StopCandidate]` | 後端 A |
+| `GET /stops/{stop_id}` | — | `StopDetail`；不在假資料 → 404 `stop_not_found` | 後端 A |
+| `GET /stops/{stop_id}/eta` | `at` | `EtaEstimate`；不在假資料 → 404 `stop_not_found` | 後端 B |
+| `POST /recommendations` | `RecommendationRequest` | `RecommendationResponse` | 架構師 |
+| `GET /routes/walk` | `from_lat`、`from_lon`、`to_lat`、`to_lon` | `WalkRoute` | 後端 A |
+| `POST /chat` | `ChatRequest` | `ChatResponse`（固定假回答，`tool_results=[]`） | 架構師 |
 
 - [ ] **Step 1: 寫失敗的測試**
 
@@ -284,9 +285,16 @@ def test_walk_route_coordinates_are_lon_lat(client):
     lon, lat = r.json()["coordinates"][0]
     assert 119 < lon < 123 and 21 < lat < 26
 
+def test_stop_eta_shape(client):
+    stop_id = client.get("/stops/nearby", params={"lat": 24.1477, "lon": 120.6736}).json()[0]["id"]
+    r = client.get(f"/stops/{stop_id}/eta")
+    assert r.status_code == 200
+    assert r.json()["status"] in {"live", "schedule_only", "stale", "passed", "no_data"}
+    assert {"eta", "eta_low", "eta_high", "data_time", "scheduled_start", "scheduled_end", "method"} <= set(r.json())
+
 def test_openapi_lists_all_endpoints(client):
     paths = client.get("/openapi.json").json()["paths"]
-    assert {"/health", "/stops/nearby", "/stops/{stop_id}", "/recommendations", "/routes/walk", "/chat"} <= set(paths)
+    assert {"/health", "/stops/nearby", "/stops/{stop_id}", "/stops/{stop_id}/eta", "/recommendations", "/routes/walk", "/chat"} <= set(paths)
 ```
 
 - [ ] **Step 2: 跑測試確認失敗**
@@ -628,7 +636,7 @@ git commit -m "feat(ingestion): parse 83558 GPS records and import historical sn
 - Modify: `docs/research/opendata-api-check.md`（§10 寫結論）、`backend/app/core/config.py`（預設值）
 - Test: `backend/tests/core/test_config.py`（Task 1 已建立，這裡加一個測試）
 
-**方法：** 抽 1,000 個有座標、`geocode_level <> 'suspect'` 的收運點（`O後端 BER BY md5(id::text) LIMIT 1000`，結果可重現）。對每個點的每個一般垃圾時段，看它的 `car_licence` 那台車，有沒有在「時段前後 30 分鐘內、離點 100 公尺內」出現（`ST_DWithin(o.geom::geography, s.geom::geography, 100)`）。用 100 公尺是因為 2026-11-06 以前每 10 分鐘才抓一次（`opendata-api-check.md` §3），50 公尺太容易漏掉；這裡只比較各星期的相對高低，不求準確到點。日期用 `observed_at AT TIME ZONE 'Asia/Taipei'`。
+**方法：** 抽 1,000 個有座標、`geocode_level <> 'suspect'` 的收運點（`ORDER BY md5(id::text) LIMIT 1000`，結果可重現）。對每個點的每個一般垃圾時段，看它的 `car_licence` 那台車，有沒有在「時段前後 30 分鐘內、離點 100 公尺內」出現（`ST_DWithin(o.geom::geography, s.geom::geography, 100)`）。用 100 公尺是因為 2026-11-06 以前每 10 分鐘才抓一次（`opendata-api-check.md` §3），50 公尺太容易漏掉；這裡只比較各星期的相對高低，不求準確到點。日期用 `observed_at AT TIME ZONE 'Asia/Taipei'`。
 
 輸出 7×7 表：列是 `day_index`（1–7），欄是 ISO 星期（`EXTRACT(ISODOW FROM ...)`），格子是「排了這個 `day_index` 的點，在該星期有被車經過的天數比例」。
 

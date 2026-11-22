@@ -180,20 +180,24 @@ slack = eta_low − (現在 + 步行時間) − 安全緩衝
 
 ## 6. API（v0，第 1 週和前端一起定）
 
-| API | 用途 | 第一版來源 |
-|---|---|---|
-| `GET /health` | 服務與資料狀態（最新 GPS 時間） | — |
-| `GET /stops/nearby?lat=&lon=&radius=` | 附近收運點 | gis |
-| `GET /stops/{id}` | 單一收運點的每週時段 | gis |
-| `POST /recommendations` | 推薦 | recommendation |
-| `GET /routes/walk?from_lat=&from_lon=&to_lat=&to_lon=` | 步行路線，回解碼好的座標陣列（`[lon, lat]`） | gis |
-| `POST /chat` | LLM 對話 | agent |
+| API | 用途 | 第一版來源 | 負責人 |
+|---|---|---|---|
+| `GET /health` | 服務與資料狀態（最新 GPS 時間） | — | 後端 B |
+| `GET /stops/nearby?lat=&lon=&radius=` | 附近收運點 | gis | 後端 A |
+| `GET /stops/{id}` | 單一收運點的每週時段 | gis | 後端 A |
+| `GET /stops/{id}/eta?at=` | 單一收運點今天的 ETA（格式同 §4「ETA 結果」） | eta | 後端 B |
+| `POST /recommendations` | 推薦 | recommendation | 架構師 |
+| `GET /routes/walk?from_lat=&from_lon=&to_lat=&to_lon=` | 步行路線，回解碼好的座標陣列（`[lon, lat]`） | gis | 後端 A |
+| `POST /chat` | LLM 對話 | agent | 架構師 |
+
+- **API 分工（架構師決定 2026-11-22）：** 除了前端，3 個人各自負責幾支 API，從 HTTP 到背後的模組和測試整條做完。架構師第 1 週先把全部規格（`schemas.py`）和假資料定好；之後各自把自己那幾支換成真的。規格要改，先告訴架構師，因為前端也在用。
+- `/stops/{id}/eta` 讓後端 B 的 ETA 不用等推薦做完，就能自己測、自己 Demo；前端也能在收運點詳細頁直接顯示。
 
 - 規格寫在 `backend/app/api/schemas.py`，FastAPI 自動產生 `/docs`（OpenAPI）頁面給前端看。
 - 第 1 週 API 先回**固定假資料**，前端照規格開工。
 - 錯誤格式統一：`{"error": {"code": "...", "message": "..."}}`。
 - `/chat` 加簡單次數限制（例如每分鐘 10 次），避免 Demo 時燒錢。
-- **可指定時間（架構師決定）：** `/stops/nearby`、`/recommendations`、`/chat` 都接受可選參數 `at`（ISO 8601）。沒給就用現在。所有模組的函式都把「現在」當參數傳進去，**不在模組裡直接讀系統時鐘**。這樣晚上或週日也能用歷史資料 Demo，測試也好寫。
+- **可指定時間（架構師決定）：** `/stops/nearby`、`/stops/{id}/eta`、`/recommendations`、`/chat` 都接受可選參數 `at`（ISO 8601）。沒給就用現在。所有模組的函式都把「現在」當參數傳進去，**不在模組裡直接讀系統時鐘**。這樣晚上或週日也能用歷史資料 Demo，測試也好寫。
 
 ## 7. 主要流程
 

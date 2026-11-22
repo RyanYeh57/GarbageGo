@@ -85,7 +85,7 @@ GarbageGo 預計整合垃圾車動態資料、收運點資料、GIS 空間分析
 
 > **Status:** Proposed；模組化單體架構與 PostgreSQL/PostGIS 已於 2026-11-22 P1 技術選型確認（見 §10），模組設計尚未實作驗證。
 >
-> 詳細架構草稿請參考 [`docs/architecture/modular-monolith.md`](docs/architecture/modular-monolith.md)。
+> 詳細架構草稿請參考 [`docs/architecture/modular-monolith.md`](docs/architecture/modular-monolith.md)；v1 實作版架構（資料夾、模組介面、資料表、API、部署）見 [`docs/architecture/backend-architecture.md`](docs/architecture/backend-architecture.md)。
 
 ```mermaid
 flowchart TD

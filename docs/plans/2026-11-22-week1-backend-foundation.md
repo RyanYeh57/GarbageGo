@@ -26,13 +26,13 @@
 |---|---|---|
 | 1 | 後端骨架：能啟動、`/health` 會回應、log 不記使用者位置 | 架構師 |
 | 2 | 定好 API 長什麼樣子，先回假資料 | 架構師 |
-| 3 | 建 4 張資料表 | 後端 |
-| 4 | 把收運點和座標匯進資料庫 | 後端 |
-| 5 | 把舊的 GPS 匯進資料庫 | RD |
-| 6 | 用 GPS 確認 `d1`～`d7` 是星期幾 | RD |
-| 7 | 部署主機 + 對外的 `https` 網址 | 後端 + RD |
+| 3 | 建 4 張資料表 | 後端 A |
+| 4 | 把收運點和座標匯進資料庫 | 後端 A |
+| 5 | 把舊的 GPS 匯進資料庫 | 後端 B |
+| 6 | 用 GPS 確認 `d1`～`d7` 是星期幾 | 後端 B |
+| 7 | 部署主機 + 對外的 `https` 網址 | 後端 A + 後端 B |
 
-**順序：** Task 1 先做完，其他人才開工。唯一例外：RD **第一天**就把 GPS 收集程式搬到部署主機（Task 7 Step 5）。
+**順序：** Task 1 先做完，其他人才開工。唯一例外：後端 B **第一天**就把 GPS 收集程式搬到部署主機（Task 7 Step 5）。
 
 ## 決策（2026-11-22 拷問後確認）
 
@@ -181,7 +181,7 @@ Expected: 4 passed（還沒開資料庫時 `db` 為 `"error"`，測試仍通過�
   - `db`：`postgis/postgis:16-3.4`，`restart: unless-stopped`，volume `pgdata`，掛 `./db/init:/docker-entrypoint-initdb.d`，port `127.0.0.1:5432:5432`，環境變數來自 `.env`。
   - `api`：build `./backend`，`command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --no-access-log`，`env_file: .env`，`depends_on: [db]`，`restart: unless-stopped`，port `127.0.0.1:8000:8000`。
   - `db/init/01-test-db.sql`：`CREATE DATABASE garbagego_test;`
-  - `.env.example`：`POSTGRES_USER=`、`POSTGRES_PASSWORD=`、`POSTGRES_DB=garbagego`、`DATABASE_URL=postgresql+psycopg://USER:PASS@db:5432/garbagego`、`HOST_DATABASE_URL=postgresql+psycopg://USER:PASS@localhost:5432/garbagego`、`TEST_DATABASE_URL=postgresql+psycopg://USER:PASS@localhost:5432/garbagego_test`。
+  - `.env.example`：`POSTGRES_USER=`、`POSTGRES_PASSWO後端 B=`、`POSTGRES_DB=garbagego`、`DATABASE_URL=postgresql+psycopg://USER:PASS@db:5432/garbagego`、`HOST_DATABASE_URL=postgresql+psycopg://USER:PASS@localhost:5432/garbagego`、`TEST_DATABASE_URL=postgresql+psycopg://USER:PASS@localhost:5432/garbagego_test`。
   - `Dockerfile`：`python:3.12-slim`；`pip install -r requirements.lock`，再 `pip install --no-deps .`。
 
 - [ ] **Step 7: 驗證整個環境**
@@ -317,7 +317,7 @@ git commit -m "feat(api): add v0 API contract with fixture responses"
 
 ### Task 3: 資料表與 migration
 
-**負責：** 後端
+**負責：** 後端 A
 
 **白話：** 建 4 張表：收運點、每週時段、GPS 紀錄、實際到點紀錄。同一台車同一個時間的 GPS 只存一次。
 
@@ -389,7 +389,7 @@ git commit -m "feat(db): add initial PostGIS schema and migrations"
 
 ### Task 4: 84004 收運點與座標匯入
 
-**負責：** 後端
+**負責：** 後端 A
 
 **白話：** 把 2 萬個收運點、每週時段、算好的座標放進資料庫。地址對不上就整批不寫，避免座標配錯點。
 
@@ -516,11 +516,11 @@ git commit -m "feat(ingestion): import 84004 collection points with local geocod
 
 ### Task 5: GPS 解析與歷史 GPS 匯入；`/health` 顯示最新 GPS 時間
 
-**負責：** RD
+**負責：** 後端 B
 
 **白話：** 把舊程式收了一個月的 GPS（約 98 萬筆）放進資料庫。每筆都要知道「車在幾點、在哪裡」和「我們幾點抓到的」。壞掉的檔案跳過，不要整批停掉。
 
-**前置條件：** RD 先找到舊收集程式存的快照（`opendata-api-check.md` §3：每次抓取都整份存下），並確認**每份快照的抓取時間存在哪裡**（檔名或 SQLite 欄位）。把快照整理成「每份一個 JSON 檔、內容是 83558 API 的原始陣列」，旁邊放一份 `collected_at.csv`（欄位 `file,collected_at`，ISO 8601 含時區），放在部署主機的資料夾（不進 Git）。**找不到抓取時間就停下來告訴架構師，不要用檔案修改時間代替**（決策 1：檔案一複製，修改時間就變了）。
+**前置條件：** 後端 B 先找到舊收集程式存的快照（`opendata-api-check.md` §3：每次抓取都整份存下），並確認**每份快照的抓取時間存在哪裡**（檔名或 SQLite 欄位）。把快照整理成「每份一個 JSON 檔、內容是 83558 API 的原始陣列」，旁邊放一份 `collected_at.csv`（欄位 `file,collected_at`，ISO 8601 含時區），放在部署主機的資料夾（不進 Git）。**找不到抓取時間就停下來告訴架構師，不要用檔案修改時間代替**（決策 1：檔案一複製，修改時間就變了）。
 
 **Files:**
 - Create: `backend/app/modules/ingestion/gps.py`
@@ -616,19 +616,19 @@ git commit -m "feat(ingestion): parse 83558 GPS records and import historical sn
 
 ### Task 6: 確認 `d1`～`d7` 對應星期幾
 
-**負責：** RD
+**負責：** 後端 B
 **前置條件：** Task 4、Task 5 的真資料都已匯入。
 
 **白話：** 84004 的時段寫成 `d1`～`d7`，沒說是星期幾。我們用 GPS 看「排在 `d1` 的點，車子都是星期幾真的經過」，就知道答案。
 
-**⚠️ 風險：** Task 6 排在 RD 這條線的最後面，要等 Task 3、4、5 都做完。Task 4 慢一天，這裡就慢一天。週五還沒做完，RD 當天回報，在週五整合會上決定怎麼辦。
+**⚠️ 風險：** Task 6 排在後端 B 這條線的最後面，要等 Task 3、4、5 都做完。Task 4 慢一天，這裡就慢一天。週五還沒做完，後端 B 當天回報，在週五整合會上決定怎麼辦。
 
 **Files:**
 - Create: `backend/analysis/weekday_mapping.sql`
 - Modify: `docs/research/opendata-api-check.md`（§10 寫結論）、`backend/app/core/config.py`（預設值）
 - Test: `backend/tests/core/test_config.py`（Task 1 已建立，這裡加一個測試）
 
-**方法：** 抽 1,000 個有座標、`geocode_level <> 'suspect'` 的收運點（`ORDER BY md5(id::text) LIMIT 1000`，結果可重現）。對每個點的每個一般垃圾時段，看它的 `car_licence` 那台車，有沒有在「時段前後 30 分鐘內、離點 100 公尺內」出現（`ST_DWithin(o.geom::geography, s.geom::geography, 100)`）。用 100 公尺是因為 2026-11-06 以前每 10 分鐘才抓一次（`opendata-api-check.md` §3），50 公尺太容易漏掉；這裡只比較各星期的相對高低，不求準確到點。日期用 `observed_at AT TIME ZONE 'Asia/Taipei'`。
+**方法：** 抽 1,000 個有座標、`geocode_level <> 'suspect'` 的收運點（`O後端 BER BY md5(id::text) LIMIT 1000`，結果可重現）。對每個點的每個一般垃圾時段，看它的 `car_licence` 那台車，有沒有在「時段前後 30 分鐘內、離點 100 公尺內」出現（`ST_DWithin(o.geom::geography, s.geom::geography, 100)`）。用 100 公尺是因為 2026-11-06 以前每 10 分鐘才抓一次（`opendata-api-check.md` §3），50 公尺太容易漏掉；這裡只比較各星期的相對高低，不求準確到點。日期用 `observed_at AT TIME ZONE 'Asia/Taipei'`。
 
 輸出 7×7 表：列是 `day_index`（1–7），欄是 ISO 星期（`EXTRACT(ISODOW FROM ...)`），格子是「排了這個 `day_index` 的點，在該星期有被車經過的天數比例」。
 
@@ -668,7 +668,7 @@ git commit -m "docs(research): verify 84004 day index to weekday mapping"
 
 ### Task 7: 部署主機與 `https` 網址
 
-**負責：** 後端（主機）＋ RD（GPS 收集搬家）
+**負責：** 後端 A（主機）＋ 後端 B（GPS 收集搬家）
 
 **白話：** 找一台不關機的電腦跑後端，再用 Cloudflare 開一個 `https` 網址，讓手機連得到。重開機後要自己恢復，每週備份一次資料庫。
 
@@ -686,7 +686,7 @@ git commit -m "docs(research): verify 84004 day index to weekday mapping"
 Expected: `{"status":"ok","db":"ok",...}`
 - [ ] **Step 4: 重開機測試**：重開主機，不手動操作，等 3 分鐘。
 Expected: `/health` 自己恢復。網址可能變了，手冊寫下怎麼拿新網址、怎麼通知前端。
-- [ ] **Step 5: GPS 收集搬家**（RD，**第一天就做**，不用等其他 Task）：把現有收集程式搬到這台主機，設成開機自動執行（Windows 工作排程器）；隔天確認快照檔有持續增加。第 3 週 worker 上線並確認有寫入後，才停掉舊程式。
+- [ ] **Step 5: GPS 收集搬家**（後端 B，**第一天就做**，不用等其他 Task）：把現有收集程式搬到這台主機，設成開機自動執行（Windows 工作排程器）；隔天確認快照檔有持續增加。第 3 週 worker 上線並確認有寫入後，才停掉舊程式。
 - [ ] **Step 6: 備份**：手冊寫下每週備份指令並實際做一次：
 ```
 docker compose exec db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" | gzip > /tmp/backup.sql.gz'
@@ -707,7 +707,7 @@ git commit -m "chore(deploy): add Cloudflare quick tunnel and deploy host runboo
 | 誰 | 順序 |
 |---|---|
 | 架構師 | Task 1 → Task 2（Task 1 合進 `main` 後，其他人才開工） |
-| 後端 | Task 7 Step 1 主機設定（可馬上做）→ 等 Task 1 → Task 3 → Task 4 → Task 7 其餘 |
-| RD | Task 7 Step 5 GPS 搬家（**第一天**）→ 等 Task 3 → Task 5 → 等 Task 4 → Task 6 |
+| 後端 A | Task 7 Step 1 主機設定（可馬上做）→ 等 Task 1 → Task 3 → Task 4 → Task 7 其餘 |
+| 後端 B | Task 7 Step 5 GPS 搬家（**第一天**）→ 等 Task 3 → Task 5 → 等 Task 4 → Task 6 |
 
 每個 Task 開自己的分支（例如 `feat/backend-skeleton`），完成後開 PR 合進 `main`。

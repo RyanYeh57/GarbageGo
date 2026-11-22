@@ -71,7 +71,7 @@ flowchart LR
 | 網址會變嗎 | 免帳號的 Quick Tunnel 每次重啟網址都會變；要固定網址需 Cloudflare 帳號＋自己的網域（開工時確認） |
 | App 怎麼連 | App 設定頁可以改「後端網址」，網址變了不用重新打包 App（前端負責） |
 | 開機自動啟動 | Docker Desktop 開機自動啟動；Compose 服務設 `restart: unless-stopped`；電源設定關閉睡眠 |
-| 斷線要知道 | `/health` 回最新 GPS 時間；RD 每天看一次，超過 30 分鐘沒新資料就處理 |
+| 斷線要知道 | `/health` 回最新 GPS 時間；後端 B 每天看一次，超過 30 分鐘沒新資料就處理 |
 | 資料備份 | 每週把資料庫 dump 一份到別的地方（例如雲端硬碟），電腦壞掉才救得回來 |
 
 **已知風險：** 這台電腦重開機、斷網或關機時，GPS 收集和 Demo 會一起停。對策是上面的自動啟動、每天檢查，以及第 4 週的 Demo 備援資料（用 `at` 參數＋歷史資料，不靠即時連線也能 Demo）。
@@ -119,10 +119,10 @@ api  →  agent  →  recommendation  →  gis, eta  →  db
 
 | 模組 | 函式 | 輸入 | 輸出 | 負責人 |
 |---|---|---|---|---|
-| gis | `find_nearby_stops` | 位置、半徑（公尺）、時間 | 候選收運點清單（id、地址、座標、座標品質、今天時段、直線距離） | 後端 |
-| gis | `walk_times` | 起點、多個收運點 | 每點的步行秒數、距離、方法（`valhalla`／`fallback`） | 後端 |
-| gis | `walk_route` | 起點、終點 | 路線座標陣列（WGS84） | 後端 |
-| eta | `estimate` | 收運點 id、時間 | ETA 結果（見下） | RD |
+| gis | `find_nearby_stops` | 位置、半徑（公尺）、時間 | 候選收運點清單（id、地址、座標、座標品質、今天時段、直線距離） | 後端 A |
+| gis | `walk_times` | 起點、多個收運點 | 每點的步行秒數、距離、方法（`valhalla`／`fallback`） | 後端 A |
+| gis | `walk_route` | 起點、終點 | 路線座標陣列（WGS84） | 後端 A |
+| eta | `estimate` | 收運點 id、時間 | ETA 結果（見下） | 後端 B |
 | recommendation | `recommend` | 位置、時間、可選的「最晚幾點」 | 排序後的推薦＋備案＋理由 | 架構師 |
 | agent | `chat` | 使用者訊息、位置 | 文字回答＋引用的工具結果 | 架構師 |
 
@@ -141,8 +141,8 @@ api  →  agent  →  recommendation  →  gis, eta  →  db
 
 | `status` | 什麼時候 | `eta_low` / `eta` / `eta_high` |
 |---|---|---|
-| `live` | 負責車輛 15 分鐘內有 GPS，且 RD 的方法算得出來 | 由 RD 的 ETA 方法給 |
-| `schedule_only` | 沒有可用 GPS，或 RD 方法還沒好（第 1–2 週一律是這個） | `scheduled_start` / 時段中點 / `scheduled_end` |
+| `live` | 負責車輛 15 分鐘內有 GPS，且後端 B 的方法算得出來 | 由後端 B 的 ETA 方法給 |
+| `schedule_only` | 沒有可用 GPS，或後端 B 方法還沒好（第 1–2 週一律是這個） | `scheduled_start` / 時段中點 / `scheduled_end` |
 | `stale` | 有 GPS 但超過 15 分鐘 | 同 `schedule_only`，但回應要標「GPS 過期」 |
 | `passed` | `stop_arrivals` 有今天的到點紀錄；或沒有紀錄但現在已超過 `scheduled_end` | 都為空，推薦排除 |
 | `no_data` | 今天沒有一般垃圾時段，或沒有座標 | 都為空，推薦排除 |
@@ -165,13 +165,13 @@ slack = eta_low − (現在 + 步行時間) − 安全緩衝
 
 | 資料表 | 用途 | 重要欄位 | 負責人 |
 |---|---|---|---|
-| `collection_stops` | 收運點 | `id`、`area`、`village`、`caption`、`task_type`、`car_licence`、`geom`（Point, 4326）、`geocode_source`（local／tgos／manual）、`geocode_level`（exact／approx_*） | 後端 |
-| `collection_schedules` | 每週時段（把 84004 的 `d1`～`d7` 攤平） | `stop_id`、`day_index`（1–7，84004 原始值）、`kind`（general／recycle）、`start_time`、`end_time` | 後端 |
-| `vehicle_observations` | GPS 紀錄 | `car`、`observed_at`、`collected_at`、`geom`、`speed`、`source`（api／historical）、`raw`（JSONB） | 後端（表）／RD（匯入歷史） |
-| `stop_arrivals` | 由 GPS 推出的「實際到點」，ETA 的歷史與評估用 | `stop_id`、`car`、`service_date`、`arrived_at`、`method` | RD |
+| `collection_stops` | 收運點 | `id`、`area`、`village`、`caption`、`task_type`、`car_licence`、`geom`（Point, 4326）、`geocode_source`（local／tgos／manual）、`geocode_level`（exact／approx_*） | 後端 A |
+| `collection_schedules` | 每週時段（把 84004 的 `d1`～`d7` 攤平） | `stop_id`、`day_index`（1–7，84004 原始值）、`kind`（general／recycle）、`start_time`、`end_time` | 後端 A |
+| `vehicle_observations` | GPS 紀錄 | `car`、`observed_at`、`collected_at`、`geom`、`speed`、`source`（api／historical）、`raw`（JSONB） | 後端 A（表）／後端 B（匯入歷史） |
+| `stop_arrivals` | 由 GPS 推出的「實際到點」，ETA 的歷史與評估用 | `stop_id`、`car`、`service_date`、`arrived_at`、`method` | 後端 B |
 
 - 時間一律存 `timestamptz`，對外輸出 ISO 8601 含 `+08:00`。
-- `day_index` 轉成星期幾由設定決定（`d1` 是不是星期一，第 1 週由 RD 用 GPS 確認，結論寫在 `docs/research/opendata-api-check.md` §10）。這樣匯入不用等結論。
+- `day_index` 轉成星期幾由設定決定（`d1` 是不是星期一，第 1 週由後端 B 用 GPS 確認，結論寫在 `docs/research/opendata-api-check.md` §10）。這樣匯入不用等結論。
 - **84004 版本鎖定（架構師決定）：** v1 只用一份 84004，下載日期和 sha256（檔案指紋）記在 `docs/research/geocoding-local-match-trial.md`。收運點的身分是「在這份檔案裡排第幾筆」（`source_index`），換版本會錯位，所以要換就整批重建。
 - `vehicle_observations` 用 (`car`, `observed_at`) 去重。
 - 空間查詢靠 `geom` 的 GiST 索引。
@@ -228,11 +228,11 @@ sequenceDiagram
 | 完全沒有 GPS | `schedule_only`，回答要說明「只有表定時間」 |
 | Claude API 失敗 | `/chat` 回錯誤；`/recommendations` 不受影響 |
 
-（數字 1.3、1.2 m/s、15 分鐘、5 秒都是起始值，放設定檔，RD 和後端之後依實測調整。）
+（數字 1.3、1.2 m/s、15 分鐘、5 秒都是起始值，放設定檔，後端 A、後端 B 之後依實測調整。）
 
 ## 8. 分工與 4 週里程碑
 
-| 週 | 前端 | 架構師 | 後端 | RD |
+| 週 | 前端 | 架構師 | 後端 A | 後端 B |
 |---|---|---|---|---|
 | **1** | App 骨架、地圖顯示底圖、照 `/docs` 接假資料；App 設定頁可改後端網址 | 骨架、Docker Compose、`schemas.py`、假資料 API | 資料表 + 匯入 84004 與座標；**在部署主機上裝好 Docker 與 Cloudflare Tunnel** | GPS 收集搬到部署主機；匯入歷史 GPS；**用歷史 GPS 確認 `d1`～`d7` 是不是星期一到日**（匯入不用等；第 2 週推薦前要有結論） |
 | **2** | 附近點列表、地圖標點、推薦畫面 | `recommend` 真邏輯 + 測試；串接前端 | `find_nearby_stops`、`walk_times`（Valhalla + 降級） | 到點判斷 → `stop_arrivals`；Schedule Baseline |
@@ -259,4 +259,4 @@ sequenceDiagram
 - 各模組內部怎麼拆檔案、函式命名細節。
 - ORM model 的實際寫法、索引名稱。
 - 假資料的內容（只要符合 `schemas.py`）。
-- 「到點判斷」的半徑與停留條件（RD 依資料抽樣決定，寫進 `docs/research/`）。
+- 「到點判斷」的半徑與停留條件（後端 B 依資料抽樣決定，寫進 `docs/research/`）。

@@ -13,7 +13,7 @@
 | ☐ | 把 repo 抓下來 | `git clone https://github.com/RyanYeh57/GarbageGo.git` |
 | ☐ | 讀一頁工作計畫 | `docs/plans/2026-11-22-backend-work-plan.md` |
 
-## 2. 後端的人（架構師、後端、RD）
+## 2. 後端的人（架構師、後端 A、後端 B）
 
 ### 2.1 要裝的
 
@@ -28,7 +28,7 @@
 在 repo 根目錄，用 PowerShell：
 
 ```powershell
-copy .env.example .env          # 打開 .env，填 POSTGRES_USER、POSTGRES_PASSWORD，和網址裡的 USER:PASS
+copy .env.example .env          # 打開 .env，填 POSTGRES_USER、POSTGRES_PASSWO後端 B，和網址裡的 USER:PASS
 docker compose up -d --build
 curl.exe http://localhost:8000/health
 ```
@@ -54,11 +54,11 @@ pytest -q
 
 | 誰 | ☐ | 準備 | 注意 |
 |---|---|---|---|
-| 後端 | ☐ | **一台不關機的電腦**當部署主機 | Docker Desktop 設開機自動啟動；Windows 電源設定「睡眠：永不」 |
-| 後端 | ☐ | 臺中市門牌資料（約 157 MB） | 下載方式見 `docs/research/geocoding-local-match-trial.md` |
-| RD | ☐ | **舊的 GPS 快照檔** | 之前收集程式存下來的那些 |
-| RD | ☐ | **每份快照是幾點抓的** | 檔名或 SQLite 裡要找得到。⚠️ **找不到就先告訴架構師**，不能用檔案修改時間代替 |
-| RD | ☐ | 把 GPS 收集程式搬到部署主機 | **第一天就做**。晚一天搬，就少一天資料 |
+| 後端 A | ☐ | **一台不關機的電腦**當部署主機 | Docker Desktop 設開機自動啟動；Windows 電源設定「睡眠：永不」 |
+| 後端 A | ☐ | 臺中市門牌資料（約 157 MB） | 下載方式見 `docs/research/geocoding-local-match-trial.md` |
+| 後端 B | ☐ | **舊的 GPS 快照檔** | 之前收集程式存下來的那些 |
+| 後端 B | ☐ | **每份快照是幾點抓的** | 檔名或 SQLite 裡要找得到。⚠️ **找不到就先告訴架構師**，不能用檔案修改時間代替 |
+| 後端 B | ☐ | 把 GPS 收集程式搬到部署主機 | **第一天就做**。晚一天搬，就少一天資料 |
 | 架構師 | ☐ | Claude API Key | 第 3 週才用。只放在 `.env`，不能寫進程式 |
 
 ## 3. 前端的人

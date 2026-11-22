@@ -21,6 +21,7 @@
 3. 2 萬個收運點和座標都進了資料庫。
 4. 舊的 GPS 資料都進了資料庫，新的也繼續在收。
 5. 知道 84004 的 `d1`～`d7` 是不是星期一到星期日。
+6. 每個人都能在自己電腦跑後端和資料庫，用**共用資料包**匯入一樣的資料。
 
 | Task | 一句話 | 誰 |
 |---|---|---|
@@ -46,6 +47,7 @@
 | 6 | `db`、`api` 的 port 只開給本機（`127.0.0.1`），外面只能走 Tunnel | 開給整個網路 | 部署主機可能在學校 Wi-Fi，不要把資料庫露出去 |
 | 7 | `config.py` 自己讀 repo 根目錄的 `.env`（小函式，不加套件）；環境變數優先 | 加 `python-dotenv` 或 `pydantic-settings` | 不在已同意的套件清單內 |
 | 8 | 匯入函式不自己 commit，由 CLI commit | 函式內 commit | 測試的 rollback 才有效；「地址對不上就整批不寫」才做得到 |
+| 9 | 每個人本機都有資料庫；資料用**共用資料包** `garbagego-devdata-v1.zip`（84004 鎖定版、座標、1 天份 GPS），跑同一套匯入指令。內容見 `backend-architecture.md` §2.2 | 部署主機 `pg_dump` 給大家還原 | 資料表會常改，備份檔每次都要重做；資料包重新匯入就好（架構師決定） |
 
 ## 範圍外（第 1 週不做）
 
@@ -513,6 +515,9 @@ Expected: 全部 passed（含原本 8 個 geocode 測試）
 - [ ] **Step 5: 跑真資料**：照 `docs/research/geocoding-local-match-trial.md` 下載資料，重跑 `match.py`、`village_check.py`（加 `suspects.csv` 參數），再跑匯入 CLI（第一次用 `--allow-new-dataset`）。
 Expected: `stops=20090`、`with_geom` 約 19,216、`suspects` 約 81、`skipped_slots` 至少 1（84004 有 1 筆時間格式異常）。若和文件不同，**記錄實際值**到 `geocoding-local-match-trial.md`，不要改成文件上的數字。同時記下 84004 的**下載日期和 sha256**——這就是 v1 鎖定的版本（決策 2），之後重跑都要帶 `--expect-sha256`。
 
+- [ ] **Step 5b: 放進共用資料包**（決策 9）：把 Step 5 用的 `84004.json`、`all.csv`、`suspects.csv` 放進 `garbagego-devdata-v1/`（`84004.json`、`geocode/`），`README.txt` 寫下載日期和 sha256。在**另一個空的資料庫**（自己電腦 `docker compose down -v` 後重建）照 `team-setup-checklist.md` §2.4 匯入一次。
+Expected: 數字和 Step 5 一樣。
+
 - [ ] **Step 6: Commit**
 
 ```bash
@@ -612,6 +617,9 @@ Expected: 全部 passed
 
 - [ ] **Step 5: 跑真資料**：在部署主機匯入全部歷史快照。
 Expected: `inserted` 接近 `docs/research/opendata-api-check.md` 記錄的 980,775 筆（加上之後新收的）；`/health` 的 `latest_gps_at` 是最近一次收集時間。把實際數字記到 `opendata-api-check.md`。
+
+- [ ] **Step 5b: 放進共用資料包**（決策 9）：挑 **2026-11-06 之後、資料完整的一個平日**（每 5 分鐘一份，約 288 份），把那天的快照和對應的 `collected_at.csv` 放進 `garbagego-devdata-v1/gps/`，在 `README.txt` 寫是哪一天。上傳 Google Drive，在群組通知。
+Expected: 在自己電腦照 `team-setup-checklist.md` §2.4 匯入，`/health` 的 `latest_gps_at` 落在那一天。
 
 - [ ] **Step 6: Commit**
 
@@ -717,5 +725,7 @@ git commit -m "chore(deploy): add Cloudflare quick tunnel and deploy host runboo
 | 架構師 | Task 1 → Task 2（Task 1 合進 `main` 後，其他人才開工） |
 | 後端 A | Task 7 Step 1 主機設定（可馬上做）→ 等 Task 1 → Task 3 → Task 4 → Task 7 其餘 |
 | 後端 B | Task 7 Step 5 GPS 搬家（**第一天**）→ 等 Task 3 → Task 5 → 等 Task 4 → Task 6 |
+
+**共用資料包**（決策 9）：後端 A 在 Task 4 Step 5b、後端 B 在 Task 5 Step 5b 各放一部分，**第 1 週週五前**上傳。在那之前，大家的本機資料庫是空的，前端先接假資料 API。
 
 每個 Task 開自己的分支（例如 `feat/backend-skeleton`），完成後開 PR 合進 `main`。

@@ -197,6 +197,8 @@ slack = eta_low − (現在 + 步行時間) − 安全緩衝
 
 ## 6. API（v0，第 1 週和前端一起定）
 
+> 每支 API 的參數、回應欄位、範例和錯誤格式，看 `docs/architecture/api-reference.md`。
+
 | API | 用途 | 第一版來源 | 負責人 |
 |---|---|---|---|
 | `GET /health` | 服務與資料狀態（最新 GPS 時間） | — | 後端 B |

@@ -315,6 +315,11 @@ RAG 的任務是**檢索與引用規則**，不是取代 GIS 路徑計算或 ETA
 8. **Privacy:** 如何處理定位權限、記錄及資料保存？
 9. **Research Gap:** 如何與既有垃圾車查詢與 ETA 服務明確區隔？
 10. **MVP Feasibility:** 哪些行政區與路線最適合先驗證？
+11. **84004 表定資料過時（2026-11-24 記錄）：** 84004 是「不定期更新」，我們只匯入一個固定版本（v1，2026-11-16 下載，sha256 見 `docs/research/geocoding-local-match-trial.md` §8），**沒有自動檢查新版本**。臺中市改了路線或時段，App 會顯示舊的時段，ETA 退回表定時間時也會跟著錯。
+    - **影響：** 專題只做 4 週，路線剛好在這段時間改的機會不大；但一改就會整區錯。
+    - **減輕：** ETA 優先用即時 GPS 和歷史到達時間（`docs/architecture/backend-architecture.md` §4），表定時間是最後才用的。
+    - **Demo 前手動檢查：** 重新下載 84004，比對 sha256 和 v1 是否相同（PowerShell：`Get-FileHash <檔案> -Algorithm SHA256`）。不同就是新版本，要決定換不換（換版本要整批重建，見 `docs/plans/2026-11-22-team-setup-checklist.md` §2.4）。
+    - **未實作的可能做法：** 如果某些點的實際到達時間長期偏離表定時段，可能代表路線改了。要等到點紀錄（`stop_arrivals`）做出來才能評估。
 
 ## 12. Documentation & Development Workflow
 

@@ -43,6 +43,25 @@ def test_caption_mismatch_aborts(db_session, small_inputs):
         import_stops(db_session, stops, geo, sus, at)
 
 
+def test_reimport_keeps_filled_geom_when_file_has_none(db_session, small_inputs):   # row 1 has no coordinates
+    import_stops(db_session, *small_inputs)
+    db_session.execute(text("UPDATE collection_stops SET geom = ST_SetSRID(ST_MakePoint(120.6, 24.1), 4326), "
+                            "geocode_source = 'tgos', geocode_level = 'tgos' WHERE source_index = 1"))
+    import_stops(db_session, *small_inputs)
+    row = db_session.execute(text("SELECT ST_X(geom), ST_Y(geom), geocode_source, geocode_level "
+                                  "FROM collection_stops WHERE source_index = 1")).one()
+    assert tuple(row) == (120.6, 24.1, "tgos", "tgos")
+
+
+def test_reimport_updates_geom_when_file_has_one(db_session, small_inputs):   # row 0 has coordinates
+    stops, geo, sus, at = small_inputs
+    import_stops(db_session, stops, geo, sus, at)
+    geo[0] = {**geo[0], "lon": "120.7", "lat": "24.2"}
+    import_stops(db_session, stops, geo, sus, at)
+    row = db_session.execute(text("SELECT ST_X(geom), ST_Y(geom) FROM collection_stops WHERE source_index = 0")).one()
+    assert tuple(row) == (120.7, 24.2)
+
+
 def test_blank_car_licence_is_null(db_session, small_inputs):   # 3rd row has car_licence ""
     import_stops(db_session, *small_inputs)
     assert db_session.execute(text("SELECT car_licence IS NULL FROM collection_stops WHERE source_index = 2")).scalar() is True

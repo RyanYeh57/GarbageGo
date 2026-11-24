@@ -427,6 +427,7 @@ git commit -m "feat(db): add initial PostGIS schema and migrations"
     - `--stops` 檔的 sha256 不等於 `--expect-sha256` → 印出實際值並結束（exit 1），什麼都不寫；加 `--allow-new-dataset` 才繼續（決策 2，等於換版本，要先整批重建）。
     - `car_licence` 是空字串 → 存 `NULL`，收運點照樣匯入。
     - 以 `source_index` upsert，重跑結果相同；時段先刪該點舊的再寫入。
+    - 重跑時，座標檔裡這個點**沒有座標** → 保留資料庫原本的 `geom`、`geocode_source`、`geocode_level`（TGOS、人工補的座標不會被洗掉；2026-11-24 追加）。
     - `geocode_rows[i]["caption"]` 必須等於 `stops[i]["caption"]`，不同就 `ValueError("caption mismatch at source_index i")`，整批不寫入（防止座標對錯列）。
     - 有座標 → `geom`、`geocode_source="local"`、`geocode_level` 取 `level`。
     - 在 `suspects` 內 → 仍存 `geom`，但 `geocode_level="suspect"`（推薦時排除）。

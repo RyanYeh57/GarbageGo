@@ -65,10 +65,15 @@ INSERT INTO collection_stops (source_index, area, village, caption, task_type, c
                               geom, geocode_source, geocode_level, source_dataset_at)
 VALUES (:source_index, :area, :village, :caption, :task_type, :car_licence,
         ST_SetSRID(ST_MakePoint(:lon, :lat), 4326), :geocode_source, :geocode_level, :dataset_at)
+-- A file row without coordinates keeps what the DB already has (e.g. TGOS or manual fixes).
 ON CONFLICT (source_index) DO UPDATE SET
   area = EXCLUDED.area, village = EXCLUDED.village, caption = EXCLUDED.caption,
-  task_type = EXCLUDED.task_type, car_licence = EXCLUDED.car_licence, geom = EXCLUDED.geom,
-  geocode_source = EXCLUDED.geocode_source, geocode_level = EXCLUDED.geocode_level,
+  task_type = EXCLUDED.task_type, car_licence = EXCLUDED.car_licence,
+  geom = COALESCE(EXCLUDED.geom, collection_stops.geom),
+  geocode_source = CASE WHEN EXCLUDED.geom IS NULL THEN collection_stops.geocode_source
+                        ELSE EXCLUDED.geocode_source END,
+  geocode_level = CASE WHEN EXCLUDED.geom IS NULL THEN collection_stops.geocode_level
+                       ELSE EXCLUDED.geocode_level END,
   source_dataset_at = EXCLUDED.source_dataset_at
 RETURNING id
 """)

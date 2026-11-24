@@ -188,7 +188,7 @@ slack = eta_low − (現在 + 步行時間) − 安全緩衝
 | `stop_arrivals` | 由 GPS 推出的「實際到點」，ETA 的歷史與評估用 | `stop_id`、`car`、`service_date`、`arrived_at`、`method` | 後端 B |
 
 - 時間一律存 `timestamptz`，對外輸出 ISO 8601 含 `+08:00`。
-- `day_index` 轉成星期幾由設定決定（`d1` 是不是星期一，第 1 週由後端 B 用 GPS 確認，結論寫在 `docs/research/opendata-api-check.md` §10）。這樣匯入不用等結論。
+- `day_index` 轉成星期幾由設定決定。**已確認 `d1`～`d7` = 星期一～日**（2026-11-24 用 GPS 驗證，見 `docs/research/opendata-api-check.md` §10.1）。這樣匯入不用等結論。
 - **84004 版本鎖定（架構師決定）：** v1 只用一份 84004，下載日期和 sha256（檔案指紋）記在 `docs/research/geocoding-local-match-trial.md`。收運點的身分是「在這份檔案裡排第幾筆」（`source_index`），換版本會錯位，所以要換就整批重建。
 - `vehicle_observations` 用 (`car`, `observed_at`) 去重。
 - 空間查詢靠 `geom` 的 GiST 索引。

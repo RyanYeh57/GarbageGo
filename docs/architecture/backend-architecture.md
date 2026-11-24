@@ -201,13 +201,13 @@ slack = eta_low − (現在 + 步行時間) − 安全緩衝
 
 | API | 用途 | 第一版來源 | 負責人 |
 |---|---|---|---|
-| `GET /health` | 服務與資料狀態（最新 GPS 時間） | — | 後端 B |
-| `GET /stops/nearby?lat=&lon=&radius=` | 附近收運點 | gis | 後端 A |
-| `GET /stops/{id}` | 單一收運點的每週時段 | gis | 後端 A |
-| `GET /stops/{id}/eta?at=` | 單一收運點今天的 ETA（格式同 §4「ETA 結果」） | eta | 後端 B |
-| `POST /recommendations` | 推薦 | recommendation | 架構師 |
-| `GET /routes/walk?from_lat=&from_lon=&to_lat=&to_lon=` | 步行路線，回解碼好的座標陣列（`[lon, lat]`） | gis | 後端 A |
-| `POST /chat` | LLM 對話 | agent | 架構師 |
+| `GET /health` | 服務與資料狀態（最新 GPS 時間） | — | Ian1114（後端 B） |
+| `GET /stops/nearby?lat=&lon=&radius=` | 附近收運點 | gis | hobartXIII（後端 A） |
+| `GET /stops/{id}` | 單一收運點的每週時段 | gis | hobartXIII（後端 A） |
+| `GET /stops/{id}/eta?at=` | 單一收運點今天的 ETA（格式同 §4「ETA 結果」） | eta | Ian1114（後端 B） |
+| `POST /recommendations` | 推薦 | recommendation | RyanYeh57（架構師） |
+| `GET /routes/walk?from_lat=&from_lon=&to_lat=&to_lon=` | 步行路線，回解碼好的座標陣列（`[lon, lat]`） | gis | hobartXIII（後端 A） |
+| `POST /chat` | LLM 對話 | agent | RyanYeh57（架構師） |
 
 - **API 分工（架構師決定 2026-11-22）：** 除了前端，3 個人各自負責幾支 API，從 HTTP 到背後的模組和測試整條做完。架構師第 1 週先把全部規格（`schemas.py`）和假資料定好；之後各自把自己那幾支換成真的。規格要改，先告訴架構師，因為前端也在用。
 - `/stops/{id}/eta` 讓後端 B 的 ETA 不用等推薦做完，就能自己測、自己 Demo；前端也能在收運點詳細頁直接顯示。
@@ -254,6 +254,8 @@ sequenceDiagram
 （數字 1.3、1.2 m/s、15 分鐘、5 秒都是起始值，放設定檔，後端 A、後端 B 之後依實測調整。）
 
 ## 8. 分工與 4 週里程碑
+
+**誰是誰：** 前端 = anjyuelee、架構師 = RyanYeh57、後端 A = hobartXIII、後端 B = Ian1114。本文件其他地方寫的職稱都照這個對應。
 
 | 週 | 前端 | 架構師 | 後端 A | 後端 B |
 |---|---|---|---|---|

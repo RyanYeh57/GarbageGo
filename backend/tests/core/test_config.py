@@ -1,4 +1,9 @@
-from app.core.config import load_dotenv
+from app.core.config import get_settings, load_dotenv
+
+
+def test_day_index_mapping_matches_research():
+    # Values from docs/research/opendata-api-check.md §10 (d1..d7 = Monday..Sunday)
+    assert get_settings().schedule_day_index_to_iso_weekday == {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7}
 
 
 def test_load_dotenv_skips_comments(tmp_path):

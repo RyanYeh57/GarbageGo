@@ -14,5 +14,10 @@ def health(session: Session = Depends(get_session)) -> HealthResponse:
         session.execute(text("SELECT 1"))
         db = "ok"
     except Exception:  # /health must answer even when the database is down
-        db = "error"
-    return HealthResponse(status="ok", db=db, latest_gps_at=None)
+        return HealthResponse(status="ok", db="error", latest_gps_at=None)
+    try:
+        latest = session.execute(text("SELECT max(observed_at) FROM vehicle_observations")).scalar()
+    except Exception:  # table not migrated yet
+        session.rollback()
+        latest = None
+    return HealthResponse(status="ok", db=db, latest_gps_at=latest)

@@ -23,15 +23,17 @@
 5. 知道 84004 的 `d1`～`d7` 是不是星期一到星期日。
 6. 每個人都能在自己電腦跑後端和資料庫，用**共用資料包**匯入一樣的資料。
 
-| Task | 一句話 | 誰 |
-|---|---|---|
-| 1 | 後端骨架：能啟動、`/health` 會回應、log 不記使用者位置 | 架構師 |
-| 2 | 定好 7 支 API 長什麼樣子，先回假資料 | 架構師 |
-| 3 | 建 4 張資料表 | 後端 A |
-| 4 | 把收運點和座標匯進資料庫 | 後端 A |
-| 5 | 把舊的 GPS 匯進資料庫 | 後端 B |
-| 6 | 用 GPS 確認 `d1`～`d7` 是星期幾 | 後端 B |
-| 7 | 部署主機 + 對外的 `https` 網址 | 後端 A + 後端 B |
+| Task | 一句話 | 誰 | 狀態 |
+|---|---|---|---|
+| 1 | 後端骨架：能啟動、`/health` 會回應、log 不記使用者位置 | 架構師（RyanYeh57） | ✅ 完成 |
+| 2 | 定好 7 支 API 長什麼樣子，先回假資料 | 架構師（RyanYeh57） | ✅ 完成 |
+| 3 | 建 4 張資料表 | 後端 A（hobartXIII） | ✅ 完成（架構師代做，2026-11-24） |
+| 4 | 把收運點和座標匯進資料庫 | 後端 A（hobartXIII） | ✅ 完成（架構師代做，2026-11-24） |
+| 5 | 把舊的 GPS 匯進資料庫 | 後端 B（Ian1114） | ✅ 完成（架構師代做，2026-11-24） |
+| 6 | 用 GPS 確認 `d1`～`d7` 是星期幾 | 後端 B（Ian1114） | ✅ 完成（架構師代做，2026-11-24） |
+| 7 | 部署主機 + 對外的 `https` 網址 | 後端 A（hobartXIII）+ 後端 B（Ian1114） | ☐ **還沒做**（要一台實體電腦） |
+
+組員對照見 `docs/plans/2026-11-22-backend-work-plan.md`「誰負責什麼」。
 
 **順序：** Task 1 先做完，其他人才開工。唯一例外：後端 B **第一天**就把 GPS 收集程式搬到部署主機（Task 7 Step 5）。
 
@@ -69,7 +71,7 @@
 - 錯誤格式統一：`{"error": {"code": "...", "message": "..."}}`。
 - 不把表定時間當實際到達時間；不把過期 GPS 當即時位置。
 - 組員多用 Windows：文件裡的指令要能在 PowerShell 5.1 跑（不用 `&&`、不用 `<` 重新導向、用 `curl.exe` 不用 `curl`）。`pytest` 指令都在 `backend/` 目錄下執行。
-- 主機上跑測試和匯入 CLI 時，連 `localhost:5432`；容器內的 `api` 連 `db:5432`。`.env.example` 兩種都列（`DATABASE_URL` 給容器、`HOST_DATABASE_URL` 與 `TEST_DATABASE_URL` 給主機）。
+- 主機上跑測試和匯入 CLI 時，連 `127.0.0.1:5432`（不要寫 `localhost`：port 只開在 IPv4，`localhost` 會先試 IPv6，每次連線卡 10 秒以上）；容器內的 `api` 連 `db:5432`。`.env.example` 兩種都列（`DATABASE_URL` 給容器、`HOST_DATABASE_URL` 與 `TEST_DATABASE_URL` 給主機）。
 - `docker-compose.yml` 的 port 一律寫成 `127.0.0.1:<port>:<port>`（決策 6）。
 - Commit message 用英文（`AGENTS.md` §1）。
 
@@ -183,7 +185,7 @@ Expected: 4 passed（還沒開資料庫時 `db` 為 `"error"`，測試仍通過�
   - `db`：`postgis/postgis:16-3.4`，`restart: unless-stopped`，volume `pgdata`，掛 `./db/init:/docker-entrypoint-initdb.d`，port `127.0.0.1:5432:5432`，環境變數來自 `.env`。
   - `api`：build `./backend`，`command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --no-access-log`，`env_file: .env`，`depends_on: [db]`，`restart: unless-stopped`，port `127.0.0.1:8000:8000`。
   - `db/init/01-test-db.sql`：`CREATE DATABASE garbagego_test;`
-  - `.env.example`：`POSTGRES_USER=`、`POSTGRES_PASSWORD=`、`POSTGRES_DB=garbagego`、`DATABASE_URL=postgresql+psycopg://USER:PASS@db:5432/garbagego`、`HOST_DATABASE_URL=postgresql+psycopg://USER:PASS@localhost:5432/garbagego`、`TEST_DATABASE_URL=postgresql+psycopg://USER:PASS@localhost:5432/garbagego_test`。
+  - `.env.example`：`POSTGRES_USER=`、`POSTGRES_PASSWORD=`、`POSTGRES_DB=garbagego`、`DATABASE_URL=postgresql+psycopg://USER:PASS@db:5432/garbagego`、`HOST_DATABASE_URL=postgresql+psycopg://USER:PASS@127.0.0.1:5432/garbagego`、`TEST_DATABASE_URL=postgresql+psycopg://USER:PASS@127.0.0.1:5432/garbagego_test`。
   - `Dockerfile`：`python:3.12-slim`；`pip install -r requirements.lock`，再 `pip install --no-deps .`。
 
 - [ ] **Step 7: 驗證整個環境**
@@ -425,6 +427,7 @@ git commit -m "feat(db): add initial PostGIS schema and migrations"
     - `--stops` 檔的 sha256 不等於 `--expect-sha256` → 印出實際值並結束（exit 1），什麼都不寫；加 `--allow-new-dataset` 才繼續（決策 2，等於換版本，要先整批重建）。
     - `car_licence` 是空字串 → 存 `NULL`，收運點照樣匯入。
     - 以 `source_index` upsert，重跑結果相同；時段先刪該點舊的再寫入。
+    - 重跑時，座標檔裡這個點**沒有座標** → 保留資料庫原本的 `geom`、`geocode_source`、`geocode_level`（TGOS、人工補的座標不會被洗掉；2026-11-24 追加）。
     - `geocode_rows[i]["caption"]` 必須等於 `stops[i]["caption"]`，不同就 `ValueError("caption mismatch at source_index i")`，整批不寫入（防止座標對錯列）。
     - 有座標 → `geom`、`geocode_source="local"`、`geocode_level` 取 `level`。
     - 在 `suspects` 內 → 仍存 `geom`，但 `geocode_level="suspect"`（推薦時排除）。
@@ -533,7 +536,14 @@ git commit -m "feat(ingestion): import 84004 collection points with local geocod
 
 **白話：** 把舊程式收了一個月的 GPS（約 98 萬筆）放進資料庫。每筆都要知道「車在幾點、在哪裡」和「我們幾點抓到的」。壞掉的檔案跳過，不要整批停掉。
 
-**前置條件：** 後端 B 先找到舊收集程式存的快照（`opendata-api-check.md` §3：每次抓取都整份存下），並確認**每份快照的抓取時間存在哪裡**（檔名或 SQLite 欄位）。把快照整理成「每份一個 JSON 檔、內容是 83558 API 的原始陣列」，旁邊放一份 `collected_at.csv`（欄位 `file,collected_at`，ISO 8601 含時區），放在部署主機的資料夾（不進 Git）。**找不到抓取時間就停下來告訴架構師，不要用檔案修改時間代替**（決策 1：檔案一複製，修改時間就變了）。
+**前置條件：** ✅ 已解決（2026-11-24）。舊收集程式的快照存在 SQLite `garbage.db`（`snapshots` 表，8,072 份，2026-10-05～2026-11-19；每份是 gzip 壓縮的 83558 原始 JSON，抓取時間在 `fetched_at`，含 `+08:00`）。用 `scripts/gps/export_snapshots.py` 轉成「每份一個 JSON 檔 + `collected_at.csv`」：
+
+```powershell
+python -I -X utf8 scripts/gps/export_snapshots.py <garbage.db> <輸出資料夾>                    # 全部
+python -I -X utf8 scripts/gps/export_snapshots.py <garbage.db> <輸出資料夾> --date 2026-11-17  # 只要某一天
+```
+
+`collected_at` 直接用 `fetched_at`，**不用檔案修改時間**（決策 1）；每份都比對 sha256，對不上就不寫出並 exit 1。輸出放 repo 外面（不進 Git）。
 
 **Files:**
 - Create: `backend/app/modules/ingestion/gps.py`
@@ -617,6 +627,7 @@ Expected: 全部 passed
 
 - [ ] **Step 5: 跑真資料**：在部署主機匯入全部歷史快照。
 Expected: `inserted` 接近 `docs/research/opendata-api-check.md` 記錄的 980,775 筆（加上之後新收的）；`/health` 的 `latest_gps_at` 是最近一次收集時間。把實際數字記到 `opendata-api-check.md`。
+**實際（2026-11-24）：** `files=8072, skipped_files=1, parsed=5351322, rejected=0, inserted=1710839`（資料收到 11-19，所以比 98 萬多）；`latest_gps_at = 2026-11-19T06:49:59+08:00`。
 
 - [ ] **Step 5b: 放進共用資料包**（決策 9）：挑 **2026-11-06 之後、資料完整的一個平日**（每 5 分鐘一份，約 288 份），把那天的快照和對應的 `collected_at.csv` 放進 `garbagego-devdata-v1/gps/`，在 `README.txt` 寫是哪一天。上傳 Google Drive，在群組通知。
 Expected: 在自己電腦照 `team-setup-checklist.md` §2.4 匯入，`/health` 的 `latest_gps_at` 落在那一天。
@@ -661,6 +672,7 @@ Expected: 7×7 表。若 `d1`=星期一，對角線的比例應明顯高於同�
 
 - [ ] **Step 3: 記錄結論**：在 `opendata-api-check.md` §10 貼表、寫抽樣方法、結論與限制（例如週三只有 41 筆、週日 0 筆，樣本少）。結論只寫表上看得到的。
   - WHEN 表上看不出明顯的對角線 THEN 先維持 `d1`＝星期一，§10 寫「未確認」，並通知架構師。
+  - **實際（2026-11-24）：** 上面的表看不出對角線（88% 的點都排 `d1,d2,d4,d5,d6`）。SQL 多加兩張能分辨的表（只排一天的點、有排 vs 沒排），都支持 **`d1`～`d7` = 星期一～日**。詳見 `opendata-api-check.md` §10.1。
 
 - [ ] **Step 4: 先寫測試再改設定**
 

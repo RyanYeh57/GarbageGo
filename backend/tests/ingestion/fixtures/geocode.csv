@@ -1,0 +1,4 @@
+source_index,area,village,task_type,caption,level,flags,lon,lat,addr_village,village_ok
+0,中區,中華里,沿街,中華路一段143號,exact,,120.676275723001,24.144966424358,中華里,True
+1,中區,中華里,沿街,中華路與民生路口,no_number,no_number,,,,
+2,中區,中華里,沿街,中華路一段81號,exact,,120.675096990796,24.143830524764,中華里,True

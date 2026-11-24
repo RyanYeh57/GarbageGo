@@ -26,7 +26,8 @@ class Settings:
     database_url: str = ""
     host_database_url: str = ""
     test_database_url: str = ""
-    # 84004 d1..d7 -> ISO weekday (1 = Monday). Verified in plan Task 6.
+    # 84004 d1..d7 -> ISO weekday (1 = Monday). Checked with GPS in plan Task 6:
+    # d1..d7 = Monday..Sunday (docs/research/opendata-api-check.md §10).
     schedule_day_index_to_iso_weekday: dict[int, int] = field(
         default_factory=lambda: {i: i for i in range(1, 8)}
     )

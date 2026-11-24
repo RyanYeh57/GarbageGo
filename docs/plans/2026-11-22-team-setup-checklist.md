@@ -13,7 +13,7 @@
 | ☐ | 把 repo 抓下來 | `git clone https://github.com/RyanYeh57/GarbageGo.git` |
 | ☐ | 讀一頁工作計畫 | `docs/plans/2026-11-22-backend-work-plan.md` |
 
-## 2. 後端的人（架構師、後端 A、後端 B）
+## 2. 後端的人（架構師 RyanYeh57、後端 A hobartXIII、後端 B Ian1114）
 
 ### 2.1 要裝的
 
@@ -46,9 +46,11 @@ pip install -e . --no-deps
 pytest -q
 ```
 
-**成功的樣子：** 最後一行是 `5 passed`（之後測試會變多）。
+**成功的樣子：** 最後一行是 `43 passed`（之後測試會變多）。DB 相關的測試要先 `docker compose up -d`，並在 `.env` 填好 `TEST_DATABASE_URL`。
 
 > ⚠️ `.env` 裡有密碼，**不要 commit**。`.gitignore` 已經擋住了，但 `git add` 時還是看一下。
+
+> ⚠️ **2026-11-24 以前複製的 `.env` 要改一個地方：** `HOST_DATABASE_URL`、`TEST_DATABASE_URL` 裡的 `@localhost:5432` 改成 `@127.0.0.1:5432`。資料庫只開在 `127.0.0.1`，寫 `localhost` 的話 Windows 會先試 IPv6，每次連線卡 10 秒以上，`pytest` 看起來像當掉。
 
 ### 2.4 本機資料（第 1 週週五之後）
 
@@ -66,7 +68,7 @@ pytest -q
 docker compose up -d --build     # api 啟動時會自動建資料表
 cd backend
 $D = "$env:USERPROFILE\garbagego-data\garbagego-devdata-v1"
-python -m app.modules.ingestion.stops --stops $D\84004.json --geocode $D\geocode\all.csv --suspects $D\geocode\suspects.csv --expect-sha256 <README.txt 裡的值>
+python -m app.modules.ingestion.stops --stops $D\84004.json --geocode $D\geocode\all.csv --suspects $D\geocode\suspects.csv --expect-sha256 <README.txt 裡的值> --dataset-at 2026-11-16T09:21:00+08:00
 python -m app.modules.ingestion.gps $D\gps
 curl.exe http://localhost:8000/health
 ```
@@ -89,15 +91,15 @@ docker compose up -d --build
 | 誰 | ☐ | 準備 | 注意 |
 |---|---|---|---|
 | 後端 A | ☐ | **一台不關機的電腦**當部署主機 | Docker Desktop 設開機自動啟動；Windows 電源設定「睡眠：永不」 |
-| 後端 A | ☐ | 臺中市門牌資料（約 157 MB） | 下載方式見 `docs/research/geocoding-local-match-trial.md` |
-| 後端 B | ☐ | **舊的 GPS 快照檔** | 之前收集程式存下來的那些 |
-| 後端 B | ☐ | **每份快照是幾點抓的** | 檔名或 SQLite 裡要找得到。⚠️ **找不到就先告訴架構師**，不能用檔案修改時間代替 |
-| 後端 B | ☐ | 把 GPS 收集程式搬到部署主機 | **第一天就做**。晚一天搬，就少一天資料 |
-| 後端 A | ☐ | 共用資料包：收運點與座標 | Task 4 Step 5b，週五前 |
-| 後端 B | ☐ | 共用資料包：1 天份 GPS | Task 5 Step 5b，週五前 |
+| 後端 A | ✅ | 臺中市門牌資料（約 157 MB） | 架構師已跑完比對（2026-11-24）。重跑才需要，下載方式見 `docs/research/geocoding-local-match-trial.md` |
+| 後端 B | ✅ | **舊的 GPS 快照檔** | 舊 SQLite `garbage.db`（456 MB，向架構師拿）。用 `scripts/gps/export_snapshots.py` 轉成 Task 5 要的資料夾 |
+| 後端 B | ✅ | **每份快照是幾點抓的** | 有：`snapshots.fetched_at`（含 `+08:00`），轉檔時寫進 `collected_at.csv` |
+| 後端 B | ☐ | 把 GPS 收集程式搬到部署主機 | **還沒做，最急**。晚一天搬，就少一天資料（目前資料停在 2026-11-19 06:52） |
+| 後端 A | ✅ | 共用資料包：收運點與座標 | 架構師已放進 `garbagego-devdata-v1`（2026-11-24） |
+| 後端 B | ✅ | 共用資料包：1 天份 GPS | 架構師已放進 `garbagego-devdata-v1`：2026-11-17（星期二），288 份 |
 | 架構師 | ☐ | Claude API Key | 第 3 週才用。只放在 `.env`，不能寫進程式 |
 
-## 3. 前端的人
+## 3. 前端的人（anjyuelee）
 
 ### 3.1 要裝的
 

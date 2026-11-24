@@ -9,7 +9,8 @@ from app.core.config import get_settings
 
 @lru_cache
 def _engine_for(url: str) -> Engine:
-    return create_engine(url, pool_pre_ping=True)
+    # Session time zone Asia/Taipei: timestamptz values come back as +08:00.
+    return create_engine(url, pool_pre_ping=True, connect_args={"options": "-c timezone=Asia/Taipei"})
 
 
 def get_engine(url: str | None = None) -> Engine:

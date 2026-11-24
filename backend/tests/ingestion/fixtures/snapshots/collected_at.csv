@@ -1,0 +1,5 @@
+file,collected_at
+ok.json,2026-11-03T19:42:00+08:00
+empty.json,2026-11-03T19:47:00+08:00
+not_array.json,2026-11-03T19:52:00+08:00
+broken.json,2026-11-03T19:57:00+08:00

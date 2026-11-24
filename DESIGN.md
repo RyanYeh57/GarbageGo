@@ -340,6 +340,11 @@ Update documentation and implementation status
 | Architecture | Proposed | 僅為邏輯架構 |
 | Data Sources | To Verify | 尚未完成實際 API 驗證 |
 | Backend API Skeleton | Verified | FastAPI + Docker Compose + `/health`；7 支 API 依 `backend/app/api/schemas.py` 回**固定假資料**（2026-11-24 pytest 與 Docker 實測）。欄位待與前端確認 |
+| Database Schema | Verified | 4 張表 + Alembic `0001`，`api` 啟動時自動 migrate（2026-11-24 pytest 與 Docker 實測） |
+| Data Ingestion：84004 + 座標 | Verified | 20,090 點、19,216 有座標、81 筆 `suspect`（2026-11-24 實跑，見 `docs/research/geocoding-local-match-trial.md` §8）。座標本身仍未人工核對 |
+| Data Ingestion：歷史 GPS | Verified | 1,710,839 筆，2026-10-05～2026-11-19（2026-11-24 實跑，見 `docs/research/opendata-api-check.md` §3）。即時收集 worker 為 Planned（第 3 週） |
+| `d1`～`d7` 星期對應 | Verified（部分推論） | = 星期一～日（GPS 驗證，見 `opendata-api-check.md` §10.1）。`d2`、`d4`、`d5`、`d6` 有直接證據；`d1` 證據弱；`d3`、`d7` 無法直接驗證，是推論 |
+| Deploy Host + Tunnel | Planned | Task 7，需要實體電腦 |
 | GIS Engine | Planned | 尚未實作 |
 | ETA Engine | Planned | 尚未選型或訓練 |
 | Recommendation Engine | Planned | 僅有概念性規則 |
@@ -354,3 +359,4 @@ Update documentation and implementation status
 |---|---|---|
 | v0.1 | 2026-10-20 | 建立初始設計草案；定義研究目標、邏輯架構、資料需求、候選演算法、評估方向與待決策事項 |
 | v0.2 | 2026-11-22 | 完成 P1 技術選型（§10）：Android（Compose + MVVM）、MapLibre + 臺灣通用電子地圖、Valhalla 步行、臺中門牌本地 Geocoding + TGOS 備援、Claude API、FastAPI + PostGIS |
+| v0.3 | 2026-11-24 | 第 1 週 Task 3～6 完成：資料表、84004 與座標匯入、歷史 GPS 匯入、`d1`～`d7` = 星期一～日（§13） |

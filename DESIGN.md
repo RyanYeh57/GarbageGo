@@ -339,6 +339,7 @@ Update documentation and implementation status
 | Requirements | Draft | 待 Brainstorming 與使用者確認 |
 | Architecture | Proposed | 僅為邏輯架構 |
 | Data Sources | To Verify | 尚未完成實際 API 驗證 |
+| Backend API Skeleton | Verified | FastAPI + Docker Compose + `/health`；7 支 API 依 `backend/app/api/schemas.py` 回**固定假資料**（2026-11-24 pytest 與 Docker 實測）。欄位待與前端確認 |
 | GIS Engine | Planned | 尚未實作 |
 | ETA Engine | Planned | 尚未選型或訓練 |
 | Recommendation Engine | Planned | 僅有概念性規則 |

@@ -212,9 +212,9 @@ slack = eta_low − (現在 + 步行時間) − 安全緩衝
 
 - 規格寫在 `backend/app/api/schemas.py`，FastAPI 自動產生 `/docs`（OpenAPI）頁面給前端看。
 - 第 1 週 API 先回**固定假資料**，前端照規格開工。
-- 錯誤格式統一：`{"error": {"code": "...", "message": "..."}}`。
+- 錯誤格式統一：`{"error": {"code": "...", "message": "..."}}`。參數不合法 → 422 `validation_error`（`message` 只寫欄位和規則，**不回傳使用者送來的值**，因為可能是位置）；找不到 → 404，例如 `stop_not_found`、`not_found`。
 - `/chat` 加簡單次數限制（例如每分鐘 10 次），避免 Demo 時燒錢。
-- **可指定時間（架構師決定）：** `/stops/nearby`、`/stops/{id}/eta`、`/recommendations`、`/chat` 都接受可選參數 `at`（ISO 8601）。沒給就用現在。所有模組的函式都把「現在」當參數傳進去，**不在模組裡直接讀系統時鐘**。這樣晚上或週日也能用歷史資料 Demo，測試也好寫。
+- **可指定時間（架構師決定）：** `/stops/nearby`、`/stops/{id}/eta`、`/recommendations`、`/chat` 都接受可選參數 `at`（ISO 8601；沒寫時區就當臺北時間）。沒給就用現在。API 輸出的時間一律是 `+08:00`。所有模組的函式都把「現在」當參數傳進去，**不在模組裡直接讀系統時鐘**。這樣晚上或週日也能用歷史資料 Demo，測試也好寫。
 
 ## 7. 主要流程
 

@@ -37,13 +37,14 @@ class WasteKind(str, Enum):
 
 class EtaStatus(str, Enum):
     live = "live"
+    historical = "historical"  # no usable GPS; past arrivals at this stop
     schedule_only = "schedule_only"
     stale = "stale"
     passed = "passed"
     no_data = "no_data"
 
 
-Risk = Literal["gps_stale", "schedule_only", "approx_location", "walk_fallback"]
+Risk = Literal["gps_stale", "historical_only", "schedule_only", "approx_location", "walk_fallback"]
 WalkMethod = Literal["valhalla", "fallback"]
 
 

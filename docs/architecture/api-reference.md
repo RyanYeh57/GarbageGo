@@ -170,7 +170,7 @@
  "method": "schedule"}
 ```
 
-假資料：`1001` 是 `live`、`1002` 是 `stale`、`1003` 是 `schedule_only`。
+假資料：`1001` 是 `live`、`1002` 是 `stale`、`1003` 是 `schedule_only`。假資料沒有 `historical` 的例子；它的格式和 `live` 一樣，只是 `method` 是 `historical_avg`、`data_time` 是 `null`。
 
 ### 2.5 `POST /recommendations` — 我該去哪個點
 
@@ -280,17 +280,21 @@
 | 值 | 意思 | 推薦怎麼處理 |
 |---|---|---|
 | `live` | 用 15 分鐘內的即時 GPS 算的 | 正常 |
-| `schedule_only` | 沒有可用 GPS，只能照表定時間（第 1～2 週都是這個） | 可推薦，標風險 |
-| `stale` | 有 GPS，但超過 15 分鐘沒更新 | 可推薦，標「GPS 過期」 |
+| `historical` | 沒有可用 GPS，用這個點**過去同一個星期幾**的到達時間估計 | 可推薦，標風險 |
+| `schedule_only` | 沒有可用 GPS，也沒有足夠的歷史，只能照表定時間（第 1～2 週都是這個） | 可推薦，標風險 |
+| `stale` | 有 GPS，但超過 15 分鐘沒更新。改用歷史或表定時間估計，看 `method` 就知道是哪個 | 可推薦，標「GPS 過期」 |
 | `passed` | 車已經過了 | 不推薦 |
 | `no_data` | 今天不收，或這個點沒有座標 | 不推薦 |
+
+**估計的優先順序：** 即時 GPS → 歷史到達時間 → 表定時間。前面的沒有，才用後面的。
 
 ### 3.3 推薦的 `risks`
 
 | 值 | 意思 |
 |---|---|
 | `gps_stale` | 車子的 GPS 太舊 |
-| `schedule_only` | 只有表定時間，沒有即時 GPS |
+| `historical_only` | 沒有即時 GPS，只能用過去的到達時間估計 |
+| `schedule_only` | 只有表定時間，沒有即時 GPS，也沒有歷史 |
 | `approx_location` | 收運點座標是大概的 |
 | `walk_fallback` | 步行時間是直線粗估，不是真實路線 |
 

@@ -8,7 +8,7 @@ def test_recommendation_shape(client):
     r = client.post("/recommendations", json={"lat": 24.1477, "lon": 120.6736})
     body = r.json()
     assert r.status_code == 200
-    assert body["primary"]["eta"]["status"] in {"live", "schedule_only", "stale", "passed", "no_data"}
+    assert body["primary"]["eta"]["status"] in {"live", "historical", "schedule_only", "stale", "passed", "no_data"}
     assert len(body["alternatives"]) <= 2
 
 
@@ -56,10 +56,18 @@ def test_stop_eta_shape(client):
     stop_id = client.get("/stops/nearby", params={"lat": 24.1477, "lon": 120.6736}).json()[0]["id"]
     r = client.get(f"/stops/{stop_id}/eta")
     assert r.status_code == 200
-    assert r.json()["status"] in {"live", "schedule_only", "stale", "passed", "no_data"}
+    assert r.json()["status"] in {"live", "historical", "schedule_only", "stale", "passed", "no_data"}
     assert {"eta", "eta_low", "eta_high", "data_time", "scheduled_start", "scheduled_end", "method"} <= set(r.json())
 
 
 def test_openapi_lists_all_endpoints(client):
     paths = client.get("/openapi.json").json()["paths"]
     assert {"/health", "/stops/nearby", "/stops/{stop_id}", "/stops/{stop_id}/eta", "/recommendations", "/routes/walk", "/chat"} <= set(paths)
+
+
+def test_eta_status_has_historical_fallback(client):
+    # No live GPS -> historical average first, schedule only when there is no history (backend-architecture.md §4)
+    schemas = client.get("/openapi.json").json()["components"]["schemas"]
+    assert schemas["EtaStatus"]["enum"] == ["live", "historical", "schedule_only", "stale", "passed", "no_data"]
+    risks = schemas["RecommendationItem"]["properties"]["risks"]["items"]["enum"]
+    assert "historical_only" in risks

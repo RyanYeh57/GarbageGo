@@ -147,24 +147,27 @@ api  →  agent  →  recommendation  →  gis, eta  →  db
 
 | 欄位 | 意思 |
 |---|---|
-| `status` | `live`（用即時 GPS）／`schedule_only`（只有表定時間）／`stale`（GPS 太舊）／`passed`（車已經過了）／`no_data` |
+| `status` | `live`（用即時 GPS）／`historical`（沒有可用 GPS，用過去到達時間）／`schedule_only`（只有表定時間）／`stale`（GPS 太舊）／`passed`（車已經過了）／`no_data` |
 | `eta` | 預計到達時間；`no_data` 時為空 |
 | `eta_low`、`eta_high` | 可能範圍（不確定性） |
 | `method` | 用了哪個方法，例如 `schedule`、`historical_avg`、`distance_speed` |
 | `data_time` | 用到的 GPS 資料時間 |
 | `scheduled_start`、`scheduled_end` | 表定時段（一定附上，但**不等於**實際到達） |
 
-**各狀態怎麼填（架構師決定）：**
+**各狀態怎麼填（架構師決定；2026-11-24 改成「即時 → 歷史 → 表定」）：**
 
 | `status` | 什麼時候 | `eta_low` / `eta` / `eta_high` |
 |---|---|---|
 | `live` | 負責車輛 15 分鐘內有 GPS，且後端 B 的方法算得出來 | 由後端 B 的 ETA 方法給 |
-| `schedule_only` | 沒有可用 GPS，或後端 B 方法還沒好（第 1–2 週一律是這個） | `scheduled_start` / 時段中點 / `scheduled_end` |
-| `stale` | 有 GPS 但超過 15 分鐘 | 同 `schedule_only`，但回應要標「GPS 過期」 |
+| `historical` | 沒有可用 GPS，但這個點**同一個星期幾**有足夠的過去到達紀錄（`stop_arrivals`，預設至少 3 筆，放設定檔） | 由後端 B 的歷史方法給（例如過去到達時間的平均與範圍），`method = historical_avg` |
+| `schedule_only` | 沒有可用 GPS，也沒有足夠的歷史紀錄（第 1–2 週一律是這個） | `scheduled_start` / 時段中點 / `scheduled_end` |
+| `stale` | 有 GPS 但超過 15 分鐘 | 有足夠歷史 → 同 `historical`；沒有 → 同 `schedule_only`。用 `method` 分辨，回應要標「GPS 過期」 |
 | `passed` | `stop_arrivals` 有今天的到點紀錄；或沒有紀錄但現在已超過 `scheduled_end` | 都為空，推薦排除 |
 | `no_data` | 今天沒有一般垃圾時段，或沒有座標 | 都為空，推薦排除 |
 
 84004 只有時段、沒有收運點在路線上的順序，所以 v1 不推算順序；`passed` 只靠到點紀錄和時段結束時間。
+
+**歷史資料不能偷看未來：** 算 `at` 那天的歷史平均，只能用 `at` **那天以前**的到達紀錄。做 ETA 評估時，歷史平均只能用開發段的資料（`DESIGN.md` §8.1）。
 
 **推薦規則（v1）：**
 
@@ -174,7 +177,7 @@ slack = eta_low − (現在 + 步行時間) − 安全緩衝
 
 - 用 `eta_low`（最早可能到）而不是 `eta`，偏保守，避免推薦「可能趕不上」的點。
 - `slack ≥ 0` → 可行；排序先看可行，再看步行時間短、資料新。
-- `status` 是 `stale`／`schedule_only` 的點要標「風險較高」，`passed` 的點直接排除。
+- `status` 是 `stale`／`historical`／`schedule_only` 的點要標「風險較高」（`risks` 分別加 `gps_stale`、`historical_only`、`schedule_only`），`passed` 的點直接排除。
 - 至少回 1 個主推薦 + 最多 2 個備案；全部不可行時明說，不硬推。
 - 安全緩衝預設 3 分鐘，放設定檔（架構師之後可調）。
 
@@ -247,8 +250,8 @@ sequenceDiagram
 | 狀況 | 怎麼辦 |
 |---|---|
 | Valhalla 失敗或太慢（>5 秒） | 步行改用「直線距離 × 1.3 ÷ 1.2 m/s」，標 `fallback` |
-| 某車 GPS 超過 15 分鐘沒更新 | ETA `status = stale`，只用表定時間＋較寬範圍 |
-| 完全沒有 GPS | `schedule_only`，回答要說明「只有表定時間」 |
+| 某車 GPS 超過 15 分鐘沒更新 | ETA `status = stale`，改用歷史資料；沒有歷史才用表定時間 |
+| 完全沒有 GPS | 有歷史 → `historical`，回答說明「依過去到達時間估計」；沒有歷史 → `schedule_only`，說明「只有表定時間」 |
 | Claude API 失敗 | `/chat` 回錯誤；`/recommendations` 不受影響 |
 
 （數字 1.3、1.2 m/s、15 分鐘、5 秒都是起始值，放設定檔，後端 A、後端 B 之後依實測調整。）

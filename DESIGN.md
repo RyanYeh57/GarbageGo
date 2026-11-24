@@ -376,3 +376,4 @@ Update documentation and implementation status
 | v0.2 | 2026-11-22 | 完成 P1 技術選型（§10）：Android（Compose + MVVM）、MapLibre + 臺灣通用電子地圖、Valhalla 步行、臺中門牌本地 Geocoding + TGOS 備援、Claude API、FastAPI + PostGIS |
 | v0.3 | 2026-11-24 | 第 1 週 Task 3～6 完成：資料表、84004 與座標匯入、歷史 GPS 匯入、`d1`～`d7` = 星期一～日（§13） |
 | v0.4 | 2026-11-24 | 新增 GPS 資料切分規則（§8.1）：2026-11-07 以後只當測試段 |
+| v0.5 | 2026-11-24 | ETA 估計順序改成「即時 GPS → 歷史到達時間 → 表定時間」；API 新增 `status = historical`、`risks` 新增 `historical_only`（`docs/architecture/backend-architecture.md` §4） |

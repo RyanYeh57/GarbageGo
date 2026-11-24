@@ -1,5 +1,6 @@
 import csv
 import json
+import shutil
 from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -37,3 +38,11 @@ def dup_inputs():
 def small_files():
     return SimpleNamespace(stops=str(FIXTURES / "pts.json"), geocode=str(FIXTURES / "geocode.csv"),
                            suspects=str(FIXTURES / "suspects.csv"))
+
+
+@pytest.fixture
+def snapshot_dir(tmp_path):
+    """Copy of fixtures/snapshots/ (ok, empty, not_array, broken + collected_at.csv)."""
+    dest = tmp_path / "snapshots"
+    shutil.copytree(FIXTURES / "snapshots", dest)
+    return dest

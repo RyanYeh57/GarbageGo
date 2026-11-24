@@ -4,10 +4,10 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
+from app.db.session import get_engine, get_session
 from app.main import create_app
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
@@ -28,9 +28,7 @@ def db_engine():
     cfg = Config(str(BACKEND_DIR / "alembic.ini"))
     cfg.attributes["url"] = url
     command.upgrade(cfg, "head")
-    engine = create_engine(url)
-    yield engine
-    engine.dispose()
+    yield get_engine(url)
 
 
 @pytest.fixture
@@ -45,3 +43,12 @@ def db_session(db_engine):
         finally:
             session.close()
             trans.rollback()
+
+
+@pytest.fixture
+def client_with_db(db_session):
+    """TestClient whose requests use db_session, so they see uncommitted test data."""
+    app = create_app()
+    app.dependency_overrides[get_session] = lambda: db_session
+    with TestClient(app) as c:
+        yield c

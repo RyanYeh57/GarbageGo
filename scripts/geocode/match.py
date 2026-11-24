@@ -131,6 +131,21 @@ def match_one(p, code, by_key, by_prefix):
     return "number_not_found", None, flags
 
 
+def build_results(pts, codes, by_key, by_prefix):
+    """One output row per 84004 record, in file order. source_index = position in pts (from 0)."""
+    results = []
+    for i, p in enumerate(pts):
+        code = codes.get(p["area"])
+        level, rec, flags = match_one(p, code, by_key, by_prefix)
+        village_ok = None if rec is None else (rec[2] == p["village"])
+        results.append({"source_index": i, "area": p["area"], "village": p["village"],
+                        "task_type": p["task_type"], "caption": p["caption"], "level": level,
+                        "flags": ";".join(flags),
+                        "lon": rec[0] if rec else "", "lat": rec[1] if rec else "",
+                        "addr_village": rec[2] if rec else "", "village_ok": village_ok})
+    return results
+
+
 def main():
     addr_path, pts_path, out_dir = sys.argv[1], sys.argv[2], Path(sys.argv[3])
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -139,15 +154,7 @@ def main():
     codes = area_codes(pts, villages)
     print(f"address points: {len(by_key):,} unique keys; districts mapped: {len(codes)}")
 
-    results = []
-    for p in pts:
-        code = codes.get(p["area"])
-        level, rec, flags = match_one(p, code, by_key, by_prefix)
-        village_ok = None if rec is None else (rec[2] == p["village"])
-        results.append({"area": p["area"], "village": p["village"], "task_type": p["task_type"],
-                        "caption": p["caption"], "level": level, "flags": ";".join(flags),
-                        "lon": rec[0] if rec else "", "lat": rec[1] if rec else "",
-                        "addr_village": rec[2] if rec else "", "village_ok": village_ok})
+    results = build_results(pts, codes, by_key, by_prefix)
 
     random.seed(42)
     sample = random.sample(results, 200)

@@ -17,8 +17,8 @@
 
 | 檔案 | 用途 |
 |---|---|
-| `scripts/geocode/match.py` | 比對主程式：`python -I -X utf8 scripts/geocode/match.py <門牌csv> <84004 json> <輸出資料夾>` |
-| `scripts/geocode/village_check.py` | 里別一致性檢查：`python -I -X utf8 scripts/geocode/village_check.py <門牌csv> <輸出資料夾>/all.csv` |
+| `scripts/geocode/match.py` | 比對主程式：`python -I -X utf8 scripts/geocode/match.py <門牌csv> <84004 json> <輸出資料夾>`。`all.csv` 第一欄是 `source_index`（該筆在 84004 陣列的位置，從 0 起） |
+| `scripts/geocode/village_check.py` | 里別一致性檢查，並輸出可疑座標清單：`python -I -X utf8 scripts/geocode/village_check.py <門牌csv> <輸出資料夾>/all.csv <輸出資料夾>/suspects.csv`（欄位 `source_index,distance_m`，>3 km） |
 | `scripts/geocode/test_match.py` | 正規化與地址解析的單元測試（只用標準函式庫）：`python -I -X utf8 scripts/geocode/test_match.py` |
 
 ## 2. 比對方法
@@ -81,3 +81,24 @@
 1. 人工看 >3 km 的 81 筆和抽樣 20 筆 exact，確認座標。
 2. 剩下約 4%（874 筆）送 TGOS（一天內可跑完）。
 3. 規則再加下去效益很小（第 2 版只多 3 筆），剩下的交給 TGOS 和人工比較划算。
+
+## 8. v1 鎖定版本與匯入結果（2026-11-24，Task 4）
+
+**v1 鎖定的 84004（決策 2）：** 2026-11-16 下載，20,090 筆。
+`sha256 = 7f8928d07190ff2c545a7dafe0b018190bf8d93f04590cabe5df0890267b0fe6`
+之後重跑匯入都要帶 `--expect-sha256 <這個值>`。檔案不一樣就是換版本，要整批重建。
+
+2026-11-24 用同一份 84004 和門牌資料重跑 `match.py`：結果和 11-16 試跑**逐列相同**（只多了 `source_index` 欄）。`village_check.py` 輸出 81 筆可疑座標。
+
+匯入 CLI（`python -m app.modules.ingestion.stops`）實跑結果：
+
+| 項目 | 實際值 |
+|---|---|
+| `stops` | 20,090 |
+| `with_geom` | 19,216 |
+| `suspects` | 81（存座標，`geocode_level = suspect`） |
+| `car_licence` 是空的 | 6 筆（存 `NULL`） |
+| `schedules` | 171,495 個時段 |
+| `skipped_slots` | 13（都是只填開始或只填結束時間，例如 `21:30`～空白；照規則跳過） |
+
+`d7` 沒有任何時段，`d3` 只有 41 個。和「臺中週三、週日停收」相符，但星期對應要等 Task 6 用 GPS 確認。

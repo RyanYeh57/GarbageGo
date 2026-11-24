@@ -8,7 +8,23 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from match import canon, cn_to_int, parse_caption, strip_after_hao  # noqa: E402
+from match import build_results, canon, cn_to_int, parse_caption, strip_after_hao  # noqa: E402
+from village_check import find_suspects  # noqa: E402
+
+
+def test_build_results_carries_source_index():
+    pts = [{"area": "中區", "village": "中華里", "task_type": "沿街", "caption": "中華路一段143號"},
+           {"area": "中區", "village": "中華里", "task_type": "沿街", "caption": "中華路一段145號"}]
+    rows = build_results(pts, {}, {}, {})
+    assert [r["source_index"] for r in rows] == [0, 1]
+    assert list(rows[0])[0] == "source_index"
+
+
+def test_find_suspects_threshold():
+    rows = [{"source_index": "0", "lon": "120.68", "lat": "24.14", "village": "中華里", "village_ok": "False"},
+            {"source_index": "1", "lon": "120.68", "lat": "24.14", "village": "中華里", "village_ok": "True"}]
+    cents = {"中華里": [(120.68, 24.18)]}          # about 4.4 km
+    assert [i for i, _ in find_suspects(rows, cents)] == [0]
 
 
 def test_cn_to_int():

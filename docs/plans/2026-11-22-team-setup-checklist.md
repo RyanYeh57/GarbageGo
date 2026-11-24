@@ -94,7 +94,7 @@ docker compose up -d --build
 | 後端 A | ✅ | 臺中市門牌資料（約 157 MB） | 架構師已跑完比對（2026-11-24）。重跑才需要，下載方式見 `docs/research/geocoding-local-match-trial.md` |
 | 後端 B | ✅ | **舊的 GPS 快照檔** | 舊 SQLite `garbage.db`（456 MB，向架構師拿）。用 `scripts/gps/export_snapshots.py` 轉成 Task 5 要的資料夾 |
 | 後端 B | ✅ | **每份快照是幾點抓的** | 有：`snapshots.fetched_at`（含 `+08:00`），轉檔時寫進 `collected_at.csv` |
-| 後端 B | ☐ | 把 GPS 收集程式搬到部署主機 | **還沒做，最急**。晚一天搬，就少一天資料（目前資料停在 2026-11-19 06:52） |
+| 後端 B | ☐ | 把 GPS 收集程式搬到部署主機 | 還沒做，**第 2 週內搬好**。開發用的歷史資料已經夠了；新資料是給 ETA 測試段補天數（週四、週五各只有 1 天，見 `DESIGN.md` §8.1）和即時 Demo 用。目前資料停在 2026-11-19 06:52 |
 | 後端 A | ✅ | 共用資料包：收運點與座標 | 架構師已放進 `garbagego-devdata-v1`（2026-11-24） |
 | 後端 B | ✅ | 共用資料包：1 天份 GPS | 架構師已放進 `garbagego-devdata-v1`：2026-11-17（星期二），288 份 |
 | 架構師 | ☐ | Claude API Key | 第 3 週才用。只放在 `.env`，不能寫進程式 |

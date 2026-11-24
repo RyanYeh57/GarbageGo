@@ -262,7 +262,7 @@ sequenceDiagram
 | **1** | App 骨架、地圖顯示底圖、照 `/docs` 接假資料；App 設定頁可改後端網址 | 骨架、Docker Compose、`schemas.py`、假資料 API | 資料表 + 匯入 84004 與座標；**在部署主機上裝好 Docker 與 Cloudflare Tunnel** | GPS 收集搬到部署主機；匯入歷史 GPS；**用歷史 GPS 確認 `d1`～`d7` 是不是星期一到日**（匯入不用等；第 2 週推薦前要有結論） |
 | **2** | 附近點列表、地圖標點、推薦畫面 | `recommend` 真邏輯 + 測試；串接前端 | `find_nearby_stops`、`walk_times`（Valhalla + 降級） | 到點判斷 → `stop_arrivals`；Schedule Baseline |
 | **3** | 步行路線畫線、資料時間與風險標示 | `/chat` + Claude tool calling | worker 進 Docker；`walk_route`；Tunnel 網址給前端實機測試 | 即時 ETA（歷史平均、距離／速度）+ 新鮮度 |
-| **4** | 對話畫面、Demo 彩排 | 整合、文件、Demo 腳本 | Demo 備援資料、修 bug | ETA 評估（MAE、RMSE、趕上率），只寫真的跑出來的數字 |
+| **4** | 對話畫面、Demo 彩排 | 整合、文件、Demo 腳本 | Demo 備援資料、修 bug | ETA 評估（MAE、RMSE、趕上率），只寫真的跑出來的數字；只用測試段資料（`DESIGN.md` §8.1） |
 
 **每週五**：大家把分支合進 `main`，跑一次「App → 後端 → 資料庫」整條流程。
 

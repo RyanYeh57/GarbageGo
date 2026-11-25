@@ -13,7 +13,7 @@
 | ☐ | 把 repo 抓下來 | `git clone https://github.com/RyanYeh57/GarbageGo.git` |
 | ☐ | 讀一頁工作計畫 | `docs/plans/2026-11-22-backend-work-plan.md` |
 
-## 2. 後端的人（架構師 RyanYeh57、後端 A hobartXIII、後端 B Ian1114）
+## 2. 做後端的人
 
 ### 2.1 要裝的
 
@@ -90,16 +90,16 @@ docker compose up -d --build
 
 | 誰 | ☐ | 準備 | 注意 |
 |---|---|---|---|
-| 後端 A | ☐ | **一台不關機的電腦**當部署主機 | Docker Desktop 設開機自動啟動；Windows 電源設定「睡眠：永不」 |
-| 後端 A | ✅ | 臺中市門牌資料（約 157 MB） | 架構師已跑完比對（2026-11-24）。重跑才需要，下載方式見 `docs/research/geocoding-local-match-trial.md` |
-| 後端 B | ✅ | **舊的 GPS 快照檔** | 舊 SQLite `garbage.db`（456 MB，向架構師拿）。用 `scripts/gps/export_snapshots.py` 轉成 Task 5 要的資料夾 |
-| 後端 B | ✅ | **每份快照是幾點抓的** | 有：`snapshots.fetched_at`（含 `+08:00`），轉檔時寫進 `collected_at.csv` |
-| 後端 B | ☐ | 把 GPS 收集程式搬到部署主機 | 還沒做，**第 2 週內搬好**。開發用的歷史資料已經夠了；新資料是給 ETA 測試段補天數（週四、週五各只有 1 天，見 `DESIGN.md` §8.1）和即時 Demo 用。目前資料停在 2026-11-19 06:52 |
-| 後端 A | ✅ | 共用資料包：收運點與座標 | 架構師已放進 `garbagego-devdata-v1`（2026-11-24） |
-| 後端 B | ✅ | 共用資料包：1 天份 GPS | 架構師已放進 `garbagego-devdata-v1`：2026-11-17（星期二），288 份 |
-| 架構師 | ☐ | Claude API Key | 第 3 週才用。只放在 `.env`，不能寫進程式 |
+| 待定 | ☐ | **一台不關機的電腦**當部署主機 | Docker Desktop 設開機自動啟動；Windows 電源設定「睡眠：永不」 |
+| — | ✅ | 臺中市門牌資料（約 157 MB） | 架構師已跑完比對（2026-11-24）。重跑才需要，下載方式見 `docs/research/geocoding-local-match-trial.md` |
+| — | ✅ | **舊的 GPS 快照檔** | 舊 SQLite `garbage.db`（456 MB，向架構師拿）。用 `scripts/gps/export_snapshots.py` 轉成 Task 5 要的資料夾 |
+| — | ✅ | **每份快照是幾點抓的** | 有：`snapshots.fetched_at`（含 `+08:00`），轉檔時寫進 `collected_at.csv` |
+| 待定 | ☐ | 把 GPS 收集程式搬到部署主機 | 還沒做，**第 2 週內搬好**。開發用的歷史資料已經夠了；新資料是給 ETA 測試段補天數（週四、週五各只有 1 天，見 `DESIGN.md` §8.1）和即時 Demo 用。目前資料停在 2026-11-19 06:52 |
+| — | ✅ | 共用資料包：收運點與座標 | 架構師已放進 `garbagego-devdata-v1`（2026-11-24） |
+| — | ✅ | 共用資料包：1 天份 GPS | 架構師已放進 `garbagego-devdata-v1`：2026-11-17（星期二），288 份 |
+| 待定 | ☐ | Claude API Key | 第 3 週才用。只放在 `.env`，不能寫進程式 |
 
-## 3. 前端的人（anjyuelee）
+## 3. 做 App 的人
 
 ### 3.1 要裝的
 
@@ -136,12 +136,12 @@ docker compose up -d --build
 | ☐ | **設定頁可以改後端網址** | Cloudflare 網址重開就會變，不能寫死在 App 裡 |
 | ☐ | 接假資料 API | 等架構師做完 Task 2，再照 `http://<後端網址>/docs` 的規格接 |
 
-## 4. 架構師要先做的（其他人才能開工）
+## 4. 要先做的（其他人才能開工；負責人：待定）
 
 | ☐ | 事情 |
 |---|---|
 | ☐ | 把 3 位組員加進 GitHub repo |
-| ☐ | 建組內 Google Drive 資料夾，給後端 A、後端 B 上傳權限，其他人可下載 |
+| ☐ | 建組內 Google Drive 資料夾，給負責匯入資料的人上傳權限，其他人可下載 |
 | ☐ | merge PR #9（計畫文件） |
 | ☐ | 在自己電腦裝好 Docker，跑過 §2.2，確認 Task 1 沒問題 |
 | ☐ | 決定組員分工名單、Demo 日期、誰的電腦當部署主機，填進 `backend-work-plan.md` |

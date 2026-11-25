@@ -359,7 +359,7 @@ Update documentation and implementation status
 | Requirements | Draft | 待 Brainstorming 與使用者確認 |
 | Architecture | Proposed | 僅為邏輯架構 |
 | Data Sources | To Verify | 尚未完成實際 API 驗證 |
-| Backend API Skeleton | Verified | FastAPI + Docker Compose + `/health`；7 支 API 依 `backend/app/api/schemas.py` 回**固定假資料**（2026-11-24 pytest 與 Docker 實測）。欄位待與前端確認 |
+| Backend API Skeleton | Verified | FastAPI + Docker Compose + `/health`；7 支 API 依 `backend/app/api/schemas.py` 回**固定假資料**（2026-11-24 pytest 與 Docker 實測）。欄位待與做 App 的人確認 |
 | Database Schema | Verified | 4 張表 + Alembic `0001`，`api` 啟動時自動 migrate（2026-11-24 pytest 與 Docker 實測） |
 | Data Ingestion：84004 + 座標 | Verified | 20,090 點、19,216 有座標、81 筆 `suspect`（2026-11-24 實跑，見 `docs/research/geocoding-local-match-trial.md` §8）。座標本身仍未人工核對 |
 | Data Ingestion：歷史 GPS | Verified | 1,710,839 筆，2026-10-05～2026-11-19（2026-11-24 實跑，見 `docs/research/opendata-api-check.md` §3）。即時收集 worker 為 Planned（第 3 週） |

@@ -1,7 +1,6 @@
 """Week-1 fake data so the Android app can start before the real modules exist.
 
-Everything here is made up (addresses say 示範路, plates say TEST). Replace endpoint by endpoint:
-stops/routes -> backend A, eta -> backend B, recommendations/chat -> architect.
+Everything here is made up (addresses say 示範路, plates say TEST). Replace endpoint by endpoint (owners: TBD).
 """
 
 from datetime import datetime, time, timedelta

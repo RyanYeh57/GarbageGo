@@ -27,15 +27,15 @@
 |---|---|---|---|
 | 1 | 後端骨架：能啟動、`/health` 會回應、log 不記使用者位置 | 架構師（RyanYeh57） | ✅ 完成 |
 | 2 | 定好 7 支 API 長什麼樣子，先回假資料 | 架構師（RyanYeh57） | ✅ 完成 |
-| 3 | 建 4 張資料表 | 後端 A（hobartXIII） | ✅ 完成（架構師代做，2026-11-24） |
-| 4 | 把收運點和座標匯進資料庫 | 後端 A（hobartXIII） | ✅ 完成（架構師代做，2026-11-24） |
-| 5 | 把舊的 GPS 匯進資料庫 | 後端 B（Ian1114） | ✅ 完成（架構師代做，2026-11-24） |
-| 6 | 用 GPS 確認 `d1`～`d7` 是星期幾 | 後端 B（Ian1114） | ✅ 完成（架構師代做，2026-11-24） |
-| 7 | 部署主機 + 對外的 `https` 網址 | 後端 A（hobartXIII）+ 後端 B（Ian1114） | ☐ **還沒做**（要一台實體電腦） |
+| 3 | 建 4 張資料表 | — | ✅ 完成（架構師代做，2026-11-24） |
+| 4 | 把收運點和座標匯進資料庫 | — | ✅ 完成（架構師代做，2026-11-24） |
+| 5 | 把舊的 GPS 匯進資料庫 | — | ✅ 完成（架構師代做，2026-11-24） |
+| 6 | 用 GPS 確認 `d1`～`d7` 是星期幾 | — | ✅ 完成（架構師代做，2026-11-24） |
+| 7 | 部署主機 + 對外的 `https` 網址 | 待定 | ☐ **還沒做**（要一台實體電腦） |
 
-組員對照見 `docs/plans/2026-11-22-backend-work-plan.md`「誰負責什麼」。
+分工待定；組員名單見 `docs/plans/2026-11-22-backend-work-plan.md`「誰負責什麼」。
 
-**順序：** Task 1 先做完，其他人才開工。唯一例外：後端 B **第一天**就把 GPS 收集程式搬到部署主機（Task 7 Step 5）。
+**順序：** Task 1 先做完，其他人才開工。唯一例外：**第一天**就把 GPS 收集程式搬到部署主機（Task 7 Step 5）。
 
 ## 決策（2026-11-22 拷問後確認）
 
@@ -204,7 +204,7 @@ git commit -m "feat(backend): add FastAPI skeleton with Docker Compose and healt
 
 ### Task 2: API 合約（`schemas.py`）與假資料 endpoints
 
-**負責：** 架構師（和前端一起對規格）
+**負責：** 架構師（和做 App 的人一起對規格）
 
 **白話：** 先講好「App 問什麼、後端回什麼」。這週後端回的都是寫死的假資料，前端照著做畫面，不用等真的邏輯。
 
@@ -215,7 +215,7 @@ git commit -m "feat(backend): add FastAPI skeleton with Docker Compose and healt
 
 **Interfaces:**
 - Consumes: Task 1 `create_app()`、`TAIPEI`
-- Produces（`app.api.schemas`；欄位名稱就是前後端合約，之後要改先通知前端）：
+- Produces（`app.api.schemas`；欄位名稱就是前後端合約，之後要改先通知架構師和做 App 的人）：
 
 | Model | 欄位 |
 |---|---|
@@ -241,12 +241,12 @@ Endpoints（第 1 週全部回 `fixtures.py` 的資料；`at` 沒給時用現在
 
 | Endpoint | 參數 | 回傳 | 之後換成真的 |
 |---|---|---|---|
-| `GET /stops/nearby` | `lat`、`lon`、`radius`（預設 500，100～2000）、`at` | `list[StopCandidate]` | 後端 A |
-| `GET /stops/{stop_id}` | — | `StopDetail`；不在假資料 → 404 `stop_not_found` | 後端 A |
-| `GET /stops/{stop_id}/eta` | `at` | `EtaEstimate`；不在假資料 → 404 `stop_not_found` | 後端 B |
-| `POST /recommendations` | `RecommendationRequest` | `RecommendationResponse` | 架構師 |
-| `GET /routes/walk` | `from_lat`、`from_lon`、`to_lat`、`to_lon` | `WalkRoute` | 後端 A |
-| `POST /chat` | `ChatRequest` | `ChatResponse`（固定假回答，`tool_results=[]`） | 架構師 |
+| `GET /stops/nearby` | `lat`、`lon`、`radius`（預設 500，100～2000）、`at` | `list[StopCandidate]` | 待定 |
+| `GET /stops/{stop_id}` | — | `StopDetail`；不在假資料 → 404 `stop_not_found` | 待定 |
+| `GET /stops/{stop_id}/eta` | `at` | `EtaEstimate`；不在假資料 → 404 `stop_not_found` | 待定 |
+| `POST /recommendations` | `RecommendationRequest` | `RecommendationResponse` | 待定 |
+| `GET /routes/walk` | `from_lat`、`from_lon`、`to_lat`、`to_lon` | `WalkRoute` | 待定 |
+| `POST /chat` | `ChatRequest` | `ChatResponse`（固定假回答，`tool_results=[]`） | 待定 |
 
 - [ ] **Step 1: 寫失敗的測試**
 
@@ -329,7 +329,7 @@ git commit -m "feat(api): add v0 API contract with fixture responses"
 
 ### Task 3: 資料表與 migration
 
-**負責：** 後端 A
+**負責：** —（已完成，架構師代做 2026-11-24）
 
 **白話：** 建 4 張表：收運點、每週時段、GPS 紀錄、實際到點紀錄。同一台車同一個時間的 GPS 只存一次。
 
@@ -401,7 +401,7 @@ git commit -m "feat(db): add initial PostGIS schema and migrations"
 
 ### Task 4: 84004 收運點與座標匯入
 
-**負責：** 後端 A
+**負責：** —（已完成，架構師代做 2026-11-24）
 
 **白話：** 把 2 萬個收運點、每週時段、算好的座標放進資料庫。地址對不上就整批不寫，避免座標配錯點。
 
@@ -532,7 +532,7 @@ git commit -m "feat(ingestion): import 84004 collection points with local geocod
 
 ### Task 5: GPS 解析與歷史 GPS 匯入；`/health` 顯示最新 GPS 時間
 
-**負責：** 後端 B
+**負責：** —（已完成，架構師代做 2026-11-24）
 
 **白話：** 把舊程式收了一個月的 GPS（約 98 萬筆）放進資料庫。每筆都要知道「車在幾點、在哪裡」和「我們幾點抓到的」。壞掉的檔案跳過，不要整批停掉。
 
@@ -643,12 +643,12 @@ git commit -m "feat(ingestion): parse 83558 GPS records and import historical sn
 
 ### Task 6: 確認 `d1`～`d7` 對應星期幾
 
-**負責：** 後端 B
+**負責：** —（已完成，架構師代做 2026-11-24）
 **前置條件：** Task 4、Task 5 的真資料都已匯入。
 
 **白話：** 84004 的時段寫成 `d1`～`d7`，沒說是星期幾。我們用 GPS 看「排在 `d1` 的點，車子都是星期幾真的經過」，就知道答案。
 
-**⚠️ 風險：** Task 6 排在後端 B 這條線的最後面，要等 Task 3、4、5 都做完。Task 4 慢一天，這裡就慢一天。週五還沒做完，後端 B 當天回報，在週五整合會上決定怎麼辦。
+**⚠️ 風險：** Task 6 排在 GPS 這條線的最後面，要等 Task 3、4、5 都做完。Task 4 慢一天，這裡就慢一天。週五還沒做完，當天回報，在週五整合會上決定怎麼辦。
 
 **Files:**
 - Create: `backend/analysis/weekday_mapping.sql`
@@ -696,7 +696,7 @@ git commit -m "docs(research): verify 84004 day index to weekday mapping"
 
 ### Task 7: 部署主機與 `https` 網址
 
-**負責：** 後端 A（主機）＋ 後端 B（GPS 收集搬家）
+**負責：** 待定（主機、GPS 收集搬家）
 
 **白話：** 找一台不關機的電腦跑後端，再用 Cloudflare 開一個 `https` 網址，讓手機連得到。重開機後要自己恢復，每週備份一次資料庫。
 
@@ -713,8 +713,8 @@ git commit -m "docs(research): verify 84004 day index to weekday mapping"
 - [ ] **Step 3: 驗證**：用**手機行動網路**（不是同一個 Wi-Fi）打開 `https://<網址>/health`。
 Expected: `{"status":"ok","db":"ok",...}`
 - [ ] **Step 4: 重開機測試**：重開主機，不手動操作，等 3 分鐘。
-Expected: `/health` 自己恢復。網址可能變了，手冊寫下怎麼拿新網址、怎麼通知前端。
-- [ ] **Step 5: GPS 收集搬家**（後端 B，**第一天就做**，不用等其他 Task）：把現有收集程式搬到這台主機，設成開機自動執行（Windows 工作排程器）；隔天確認快照檔有持續增加。第 3 週 worker 上線並確認有寫入後，才停掉舊程式。
+Expected: `/health` 自己恢復。網址可能變了，手冊寫下怎麼拿新網址、怎麼通知做 App 的人。
+- [ ] **Step 5: GPS 收集搬家**（負責：待定，**第一天就做**，不用等其他 Task）：把現有收集程式搬到這台主機，設成開機自動執行（Windows 工作排程器）；隔天確認快照檔有持續增加。第 3 週 worker 上線並確認有寫入後，才停掉舊程式。
 - [ ] **Step 6: 備份**：手冊寫下每週備份指令並實際做一次：
 ```
 docker compose exec db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" | gzip > /tmp/backup.sql.gz'
@@ -732,12 +732,14 @@ git commit -m "chore(deploy): add Cloudflare quick tunnel and deploy host runboo
 
 ## 順序與並行
 
-| 誰 | 順序 |
-|---|---|
-| 架構師 | Task 1 → Task 2（Task 1 合進 `main` 後，其他人才開工） |
-| 後端 A | Task 7 Step 1 主機設定（可馬上做）→ 等 Task 1 → Task 3 → Task 4 → Task 7 其餘 |
-| 後端 B | Task 7 Step 5 GPS 搬家（**第一天**）→ 等 Task 3 → Task 5 → 等 Task 4 → Task 6 |
+負責人：待定（之後重新分配）
 
-**共用資料包**（決策 9）：後端 A 在 Task 4 Step 5b、後端 B 在 Task 5 Step 5b 各放一部分，**第 1 週週五前**上傳。在那之前，大家的本機資料庫是空的，前端先接假資料 API。
+| 工作線 | 順序 |
+|---|---|
+| 後端骨架 | Task 1 → Task 2（Task 1 合進 `main` 後，其他人才開工） |
+| 資料表與部署主機 | Task 7 Step 1 主機設定（可馬上做）→ 等 Task 1 → Task 3 → Task 4 → Task 7 其餘 |
+| GPS 與 ETA | Task 7 Step 5 GPS 搬家（**第一天**）→ 等 Task 3 → Task 5 → 等 Task 4 → Task 6 |
+
+**共用資料包**（決策 9）：Task 4 Step 5b、Task 5 Step 5b 各放一部分，**第 1 週週五前**上傳。在那之前，大家的本機資料庫是空的，前端先接假資料 API。
 
 每個 Task 開自己的分支（例如 `feat/backend-skeleton`），完成後開 PR 合進 `main`。

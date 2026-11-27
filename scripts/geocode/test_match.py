@@ -9,6 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from match import build_results, canon, cn_to_int, parse_caption, strip_after_hao  # noqa: E402
+from tgos_filter import accept  # noqa: E402
 from village_check import find_suspects  # noqa: E402
 
 
@@ -70,6 +71,28 @@ def test_parse_sub_number_after_hao():
     full, flags = parse_caption("成功二路120巷15號之3")
     assert full == "成功2路120巷15之3號"
     assert not any(f.startswith("suffix") for f in flags)
+
+
+def _tgos(sent, got, x="217000"):
+    return {"Address": sent, "Response_Address": got, "Response_X": x}
+
+
+def test_tgos_accept_same_street_close_numbers():
+    assert accept(_tgos("臺中市北區梅川西路四段216號",
+                        "臺中市北區賴興里13鄰梅川西路四段215號;臺中市北區賴興里13鄰梅川西路四段217號"))
+
+
+def test_tgos_reject_number_gap_over_10():
+    assert not accept(_tgos("臺中市北區漢陽西街66號", "臺中市北區長青里21鄰漢陽西街50號"))
+
+
+def test_tgos_reject_other_lane_or_no_answer():
+    assert not accept(_tgos("臺中市南區光輝街52巷8號", "臺中市南區福平里22鄰光輝街50號"))
+    assert not accept(_tgos("臺中市北區柳楊西街1號", "找不到指定的門牌地址。", x=""))
+
+
+def test_tgos_suffix_on_sent_address_ignored():
+    assert accept(_tgos("臺中市北屯區僑孝街80號北新國中", "臺中市北屯區舊社里16鄰僑孝街79號"))
 
 
 if __name__ == "__main__":

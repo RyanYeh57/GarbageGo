@@ -237,6 +237,21 @@ RAG 的任務是**檢索與引用規則**，不是取代 GIS 路徑計算或 ETA
 
 **實驗原則：**僅在取得資料與完成實驗後填入實際數值；不得將預期成果當作已驗證結果。
 
+### 8.1 GPS 資料切分（ETA 評估用，2026-11-24 決定）
+
+依時間切，不隨機切，避免時間洩漏（§6.3）。
+
+| 段落 | 時間（臺北） | 用途 |
+|---|---|---|
+| 開發段 | 2026-10-05 ～ 2026-11-06 | 設計 ETA 方法、調參數、做分析，可以隨意看 |
+| 測試段 | **2026-11-07 00:00 以後的全部資料**（含之後新收集的） | 只在最後打分數時用。**設計方法時不能看、不能拿來調參數** |
+
+- **為什麼切在 11-07：** 2026-11-06 23:32 起才改成每 5 分鐘抓一次，之前是每 10 分鐘。測試段資料較細，到點時間判斷較準。
+- **測試段目前的天數（2026-11-24）：** 11-07～11-18 共 12 天（11-19 只到 06:52，沒有晚上的收運）。扣掉不收運的週三、週日：週一、二、六各 2 天，**週四、週五各只有 1 天**。
+- **新收集的 GPS 都算測試段**，可以補足天數。部署主機完成後（Task 7）恢復收集。
+- 天數夠不夠，等到點紀錄（`stop_arrivals`）做出來、知道每天有幾筆再判斷。報告要寫實際用了哪幾天。
+- Demo 若沒有即時 GPS，可以用 API 的 `at` 參數重播歷史資料（`docs/architecture/backend-architecture.md` §6），但要說明是重播。
+
 ## 9. MVP Scope & Milestones
 
 ### Phase 0 — Research & Feasibility (Planned)
@@ -300,6 +315,11 @@ RAG 的任務是**檢索與引用規則**，不是取代 GIS 路徑計算或 ETA
 8. **Privacy:** 如何處理定位權限、記錄及資料保存？
 9. **Research Gap:** 如何與既有垃圾車查詢與 ETA 服務明確區隔？
 10. **MVP Feasibility:** 哪些行政區與路線最適合先驗證？
+11. **84004 表定資料過時（2026-11-24 記錄）：** 84004 是「不定期更新」，我們只匯入一個固定版本（v1，2026-11-16 下載，sha256 見 `docs/research/geocoding-local-match-trial.md` §8），**沒有自動檢查新版本**。臺中市改了路線或時段，App 會顯示舊的時段，ETA 退回表定時間時也會跟著錯。
+    - **影響：** 專題只做 4 週，路線剛好在這段時間改的機會不大；但一改就會整區錯。
+    - **減輕：** ETA 優先用即時 GPS 和歷史到達時間（`docs/architecture/backend-architecture.md` §4），表定時間是最後才用的。
+    - **Demo 前手動檢查：** 重新下載 84004，比對 sha256 和 v1 是否相同（PowerShell：`Get-FileHash <檔案> -Algorithm SHA256`）。不同就是新版本，要決定換不換（換版本要整批重建，見 `docs/plans/2026-11-22-team-setup-checklist.md` §2.4）。
+    - **未實作的可能做法：** 如果某些點的實際到達時間長期偏離表定時段，可能代表路線改了。要等到點紀錄（`stop_arrivals`）做出來才能評估。
 
 ## 12. Documentation & Development Workflow
 
@@ -339,7 +359,7 @@ Update documentation and implementation status
 | Requirements | Draft | 待 Brainstorming 與使用者確認 |
 | Architecture | Proposed | 僅為邏輯架構 |
 | Data Sources | To Verify | 尚未完成實際 API 驗證 |
-| Backend API Skeleton | Verified | FastAPI + Docker Compose + `/health`；7 支 API 依 `backend/app/api/schemas.py` 回**固定假資料**（2026-11-24 pytest 與 Docker 實測）。欄位待與前端確認 |
+| Backend API Skeleton | Verified | FastAPI + Docker Compose + `/health`；7 支 API 依 `backend/app/api/schemas.py` 回**固定假資料**（2026-11-24 pytest 與 Docker 實測）。欄位待與做 App 的人確認 |
 | Database Schema | Verified | 4 張表 + Alembic `0001`，`api` 啟動時自動 migrate（2026-11-24 pytest 與 Docker 實測） |
 | Data Ingestion：84004 + 座標 | Verified | 20,090 點、19,216 有座標、81 筆 `suspect`（2026-11-24 實跑，見 `docs/research/geocoding-local-match-trial.md` §8）。座標本身仍未人工核對 |
 | Data Ingestion：歷史 GPS | Verified | 1,710,839 筆，2026-10-05～2026-11-19（2026-11-24 實跑，見 `docs/research/opendata-api-check.md` §3）。即時收集 worker 為 Planned（第 3 週） |
@@ -360,3 +380,5 @@ Update documentation and implementation status
 | v0.1 | 2026-10-20 | 建立初始設計草案；定義研究目標、邏輯架構、資料需求、候選演算法、評估方向與待決策事項 |
 | v0.2 | 2026-11-22 | 完成 P1 技術選型（§10）：Android（Compose + MVVM）、MapLibre + 臺灣通用電子地圖、Valhalla 步行、臺中門牌本地 Geocoding + TGOS 備援、Claude API、FastAPI + PostGIS |
 | v0.3 | 2026-11-24 | 第 1 週 Task 3～6 完成：資料表、84004 與座標匯入、歷史 GPS 匯入、`d1`～`d7` = 星期一～日（§13） |
+| v0.4 | 2026-11-24 | 新增 GPS 資料切分規則（§8.1）：2026-11-07 以後只當測試段 |
+| v0.5 | 2026-11-24 | ETA 估計順序改成「即時 GPS → 歷史到達時間 → 表定時間」；API 新增 `status = historical`、`risks` 新增 `historical_only`（`docs/architecture/backend-architecture.md` §4） |

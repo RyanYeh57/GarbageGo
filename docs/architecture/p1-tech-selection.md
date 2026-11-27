@@ -17,7 +17,7 @@
 
 **不在 P1 決定（YAGNI，等資料再說）：**
 
-- ETA 模型技術：等 W4 Baseline 做完，由後端 B 依資料品質提案。
+- ETA 模型技術：等 W4 Baseline 做完，依資料品質提案（負責人：待定）。
 - RAG／Vector Store：W8 是選做，先不選。
 
 > **重要：D1 和 Google 綁在一起。** Google 條款不允許把 Google 的地址座標或路線結果用在非 Google 地圖上（見 D1 說明）。D2 已定用臺中市門牌資料（非 Google），所以 D2 不受 D1 影響；但 D1 選 A 時，任何地方都不能改用 Google Geocoding 或 Routes。
@@ -176,13 +176,13 @@
 
 | 動作 | 誰 | 何時 |
 |---|---|---|
-| 下載最新臺中市門牌月檔、匯入 PostGIS、抽 200 筆跑本地比對看成功率（D2） | 後端 A 或後端 B | W2 開工時 |
-| 申請 TGOS 會員與 API Key（D2 備援），先確認學生能否申請 | 後端 A 或後端 B | **盡快**（審核要時間） |
-| 實測 Valhalla matrix 一次算 5–10 點（D1 選 A 時） | 全端或後端 | W3 開工時 |
-| 寄信問國土測繪中心 zoom 16 以上與 App 使用授權（D1 選 A 時） | 前端（Android） | 決定後一週內 |
-| 做 MapLibre + EMAP 圖磚的最小 Android 試作，確認 `tileSize` 與出處標示（D1 選 A 時） | 前端（Android） | W9 開工前 |
-| 申請 LLM API Key | 全端 | W7 前 |
-| 把 Key 名稱寫進 `.env.example`（不放真的 Key） | 後端 | P2 |
+| 下載最新臺中市門牌月檔、匯入 PostGIS、抽 200 筆跑本地比對看成功率（D2） | — | ✅ 已完成（全部收運點已比對，見 `docs/research/geocoding-local-match-trial.md`） |
+| 申請 TGOS 會員與 API Key（D2 備援），先確認學生能否申請 | — | ✅ 已送出「批次地址比對服務」申請（2026-11-24），等審核 |
+| 實測 Valhalla matrix 一次算 5–10 點（D1 選 A 時） | 待定 | W3 開工時 |
+| 寄信問國土測繪中心 zoom 16 以上與 App 使用授權（D1 選 A 時） | 待定 | 決定後一週內 |
+| 做 MapLibre + EMAP 圖磚的最小 Android 試作，確認 `tileSize` 與出處標示（D1 選 A 時） | 待定 | W9 開工前 |
+| 申請 LLM API Key | 待定 | W7 前 |
+| 把 Key 名稱寫進 `.env.example`（不放真的 Key） | 待定 | P2 |
 | 更新 `DESIGN.md` §10 與 Change Log | 主導決定的人 | ✅ 2026-11-22 已更新 |
 
 ## 7. 資料來源（核對日期 2026-11-13）

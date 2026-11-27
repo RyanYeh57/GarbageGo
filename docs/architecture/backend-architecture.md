@@ -24,7 +24,7 @@
 
 **限制：**
 
-- 時間約 1 個月、4 人（前端 1、後端側 3）。
+- 時間約 1 個月、4 人。
 - 數字（座標、距離、步行時間、ETA）只能由程式算，LLM 不能自己編（`AGENTS.md` §9.2）。
 - 不能把表定時間當成實際到達時間；過期 GPS 不能當即時位置。
 - 不記錄使用者精確位置到 log（`AGENTS.md` §9.4）。
@@ -69,9 +69,9 @@ flowchart LR
 | 主機 | 一位組員的電腦，長時間開機，跑 Docker Compose（`db`、`api`、`worker`） |
 | 對外網址 | Cloudflare Tunnel 把本機 `api` 開成 `https` 網址，不用開防火牆或固定 IP。`db`、`api` 的 port 只開給本機（`127.0.0.1`），外面只能走 Tunnel |
 | 網址會變嗎 | 免帳號的 Quick Tunnel 每次重啟網址都會變；要固定網址需 Cloudflare 帳號＋自己的網域（開工時確認） |
-| App 怎麼連 | App 設定頁可以改「後端網址」，網址變了不用重新打包 App（前端負責） |
+| App 怎麼連 | App 設定頁可以改「後端網址」，網址變了不用重新打包 App（負責人：待定） |
 | 開機自動啟動 | Docker Desktop 開機自動啟動；Compose 服務設 `restart: unless-stopped`；電源設定關閉睡眠 |
-| 斷線要知道 | `/health` 回最新 GPS 時間；後端 B 每天看一次，超過 30 分鐘沒新資料就處理 |
+| 斷線要知道 | `/health` 回最新 GPS 時間；每天看一次（負責人：待定），超過 30 分鐘沒新資料就處理 |
 | 資料備份 | 每週把資料庫 dump 一份到別的地方（例如雲端硬碟），電腦壞掉才救得回來 |
 
 **已知風險：** 這台電腦重開機、斷網或關機時，GPS 收集和 Demo 會一起停。對策是上面的自動啟動、每天檢查，以及第 4 週的 Demo 備援資料（用 `at` 參數＋歷史資料，不靠即時連線也能 Demo）。
@@ -80,10 +80,10 @@ flowchart LR
 
 | 項目 | 做法 |
 |---|---|
-| 程式 + 資料庫 | 每個人（含前端）在自己電腦跑 `docker compose up -d --build`，就有自己的 `db` 和 `api`。`api` 啟動時自動建資料表（`alembic upgrade head`） |
+| 程式 + 資料庫 | 每個人（含做 App 的人）在自己電腦跑 `docker compose up -d --build`，就有自己的 `db` 和 `api`。`api` 啟動時自動建資料表（`alembic upgrade head`） |
 | 資料怎麼來 | **共用資料包** `garbagego-devdata-v1.zip`，放組內 Google Drive（連結問架構師，不寫進 repo）。下載後跑和部署主機**同一套**匯入指令 |
 | 資料包內容 | `84004.json`（v1 鎖定版）、`geocode/all.csv`、`geocode/suspects.csv`、`gps/`（**1 天份**快照 + `collected_at.csv`）、`README.txt`（下載日期、sha256、GPS 是哪一天） |
-| 誰做 | 後端 A 放收運點與座標（Task 4 完成後），後端 B 放 GPS（Task 5 完成後）。**第 1 週週五**前上傳 |
+| 誰做 | ✅ 架構師已做好 `garbagego-devdata-v1`（2026-11-24），還要上傳到組內 Google Drive |
 | 資料包更新 | 內容一改就升版號（`v2`），在群組通知。本機重建：`docker compose down -v` → `up -d --build` → 重新匯入 |
 | 不用資料包的事 | 跑測試（用 `tests/` 裡的小份假資料）；第 1 週接假資料 API |
 | 只在部署主機做的事 | 即時 GPS 收集、全部歷史 GPS、`d1`～`d7` 驗證、ETA 評估（1 天份 GPS 不夠） |
@@ -136,35 +136,38 @@ api  →  agent  →  recommendation  →  gis, eta  →  db
 
 | 模組 | 函式 | 輸入 | 輸出 | 負責人 |
 |---|---|---|---|---|
-| gis | `find_nearby_stops` | 位置、半徑（公尺）、時間 | 候選收運點清單（id、地址、座標、座標品質、今天時段、直線距離） | 後端 A |
-| gis | `walk_times` | 起點、多個收運點 | 每點的步行秒數、距離、方法（`valhalla`／`fallback`） | 後端 A |
-| gis | `walk_route` | 起點、終點 | 路線座標陣列（WGS84） | 後端 A |
-| eta | `estimate` | 收運點 id、時間 | ETA 結果（見下） | 後端 B |
-| recommendation | `recommend` | 位置、時間、可選的「最晚幾點」 | 排序後的推薦＋備案＋理由 | 架構師 |
-| agent | `chat` | 使用者訊息、位置 | 文字回答＋引用的工具結果 | 架構師 |
+| gis | `find_nearby_stops` | 位置、半徑（公尺）、時間 | 候選收運點清單（id、地址、座標、座標品質、今天時段、直線距離） | 待定 |
+| gis | `walk_times` | 起點、多個收運點 | 每點的步行秒數、距離、方法（`valhalla`／`fallback`） | 待定 |
+| gis | `walk_route` | 起點、終點 | 路線座標陣列（WGS84） | 待定 |
+| eta | `estimate` | 收運點 id、時間 | ETA 結果（見下） | 待定 |
+| recommendation | `recommend` | 位置、時間、可選的「最晚幾點」 | 排序後的推薦＋備案＋理由 | 待定 |
+| agent | `chat` | 使用者訊息、位置 | 文字回答＋引用的工具結果 | 待定 |
 
 **ETA 結果固定格式（最重要的一個合約）：**
 
 | 欄位 | 意思 |
 |---|---|
-| `status` | `live`（用即時 GPS）／`schedule_only`（只有表定時間）／`stale`（GPS 太舊）／`passed`（車已經過了）／`no_data` |
+| `status` | `live`（用即時 GPS）／`historical`（沒有可用 GPS，用過去到達時間）／`schedule_only`（只有表定時間）／`stale`（GPS 太舊）／`passed`（車已經過了）／`no_data` |
 | `eta` | 預計到達時間；`no_data` 時為空 |
 | `eta_low`、`eta_high` | 可能範圍（不確定性） |
 | `method` | 用了哪個方法，例如 `schedule`、`historical_avg`、`distance_speed` |
 | `data_time` | 用到的 GPS 資料時間 |
 | `scheduled_start`、`scheduled_end` | 表定時段（一定附上，但**不等於**實際到達） |
 
-**各狀態怎麼填（架構師決定）：**
+**各狀態怎麼填（架構師決定；2026-11-24 改成「即時 → 歷史 → 表定」）：**
 
 | `status` | 什麼時候 | `eta_low` / `eta` / `eta_high` |
 |---|---|---|
-| `live` | 負責車輛 15 分鐘內有 GPS，且後端 B 的方法算得出來 | 由後端 B 的 ETA 方法給 |
-| `schedule_only` | 沒有可用 GPS，或後端 B 方法還沒好（第 1–2 週一律是這個） | `scheduled_start` / 時段中點 / `scheduled_end` |
-| `stale` | 有 GPS 但超過 15 分鐘 | 同 `schedule_only`，但回應要標「GPS 過期」 |
+| `live` | 負責車輛 15 分鐘內有 GPS，且 ETA 方法算得出來 | 由 ETA 方法給 |
+| `historical` | 沒有可用 GPS，但這個點**同一個星期幾**有足夠的過去到達紀錄（`stop_arrivals`，預設至少 3 筆，放設定檔） | 由歷史方法給（例如過去到達時間的平均與範圍），`method = historical_avg` |
+| `schedule_only` | 沒有可用 GPS，也沒有足夠的歷史紀錄（第 1–2 週一律是這個） | `scheduled_start` / 時段中點 / `scheduled_end` |
+| `stale` | 有 GPS 但超過 15 分鐘 | 有足夠歷史 → 同 `historical`；沒有 → 同 `schedule_only`。用 `method` 分辨，回應要標「GPS 過期」 |
 | `passed` | `stop_arrivals` 有今天的到點紀錄；或沒有紀錄但現在已超過 `scheduled_end` | 都為空，推薦排除 |
 | `no_data` | 今天沒有一般垃圾時段，或沒有座標 | 都為空，推薦排除 |
 
 84004 只有時段、沒有收運點在路線上的順序，所以 v1 不推算順序；`passed` 只靠到點紀錄和時段結束時間。
+
+**歷史資料不能偷看未來：** 算 `at` 那天的歷史平均，只能用 `at` **那天以前**的到達紀錄。做 ETA 評估時，歷史平均只能用開發段的資料（`DESIGN.md` §8.1）。
 
 **推薦規則（v1）：**
 
@@ -174,7 +177,7 @@ slack = eta_low − (現在 + 步行時間) − 安全緩衝
 
 - 用 `eta_low`（最早可能到）而不是 `eta`，偏保守，避免推薦「可能趕不上」的點。
 - `slack ≥ 0` → 可行；排序先看可行，再看步行時間短、資料新。
-- `status` 是 `stale`／`schedule_only` 的點要標「風險較高」，`passed` 的點直接排除。
+- `status` 是 `stale`／`historical`／`schedule_only` 的點要標「風險較高」（`risks` 分別加 `gps_stale`、`historical_only`、`schedule_only`），`passed` 的點直接排除。
 - 至少回 1 個主推薦 + 最多 2 個備案；全部不可行時明說，不硬推。
 - 安全緩衝預設 3 分鐘，放設定檔（架構師之後可調）。
 
@@ -182,10 +185,10 @@ slack = eta_low − (現在 + 步行時間) − 安全緩衝
 
 | 資料表 | 用途 | 重要欄位 | 負責人 |
 |---|---|---|---|
-| `collection_stops` | 收運點 | `id`、`area`、`village`、`caption`、`task_type`、`car_licence`、`geom`（Point, 4326）、`geocode_source`（local／tgos／manual）、`geocode_level`（exact／approx_*） | 後端 A |
-| `collection_schedules` | 每週時段（把 84004 的 `d1`～`d7` 攤平） | `stop_id`、`day_index`（1–7，84004 原始值）、`kind`（general／recycle）、`start_time`、`end_time` | 後端 A |
-| `vehicle_observations` | GPS 紀錄 | `car`、`observed_at`、`collected_at`、`geom`、`speed`、`source`（api／historical）、`raw`（JSONB） | 後端 A（表）／後端 B（匯入歷史） |
-| `stop_arrivals` | 由 GPS 推出的「實際到點」，ETA 的歷史與評估用 | `stop_id`、`car`、`service_date`、`arrived_at`、`method` | 後端 B |
+| `collection_stops` | 收運點 | `id`、`area`、`village`、`caption`、`task_type`、`car_licence`、`geom`（Point, 4326）、`geocode_source`（local／tgos／manual）、`geocode_level`（exact／approx_*） | 待定 |
+| `collection_schedules` | 每週時段（把 84004 的 `d1`～`d7` 攤平） | `stop_id`、`day_index`（1–7，84004 原始值）、`kind`（general／recycle）、`start_time`、`end_time` | 待定 |
+| `vehicle_observations` | GPS 紀錄 | `car`、`observed_at`、`collected_at`、`geom`、`speed`、`source`（api／historical）、`raw`（JSONB） | 待定 |
+| `stop_arrivals` | 由 GPS 推出的「實際到點」，ETA 的歷史與評估用 | `stop_id`、`car`、`service_date`、`arrived_at`、`method` | 待定 |
 
 - 時間一律存 `timestamptz`，對外輸出 ISO 8601 含 `+08:00`。
 - `day_index` 轉成星期幾由設定決定。**已確認 `d1`～`d7` = 星期一～日**（2026-11-24 用 GPS 驗證，見 `docs/research/opendata-api-check.md` §10.1）。這樣匯入不用等結論。
@@ -197,18 +200,20 @@ slack = eta_low − (現在 + 步行時間) − 安全緩衝
 
 ## 6. API（v0，第 1 週和前端一起定）
 
+> 每支 API 的參數、回應欄位、範例和錯誤格式，看 `docs/architecture/api-reference.md`。
+
 | API | 用途 | 第一版來源 | 負責人 |
 |---|---|---|---|
-| `GET /health` | 服務與資料狀態（最新 GPS 時間） | — | 後端 B |
-| `GET /stops/nearby?lat=&lon=&radius=` | 附近收運點 | gis | 後端 A |
-| `GET /stops/{id}` | 單一收運點的每週時段 | gis | 後端 A |
-| `GET /stops/{id}/eta?at=` | 單一收運點今天的 ETA（格式同 §4「ETA 結果」） | eta | 後端 B |
-| `POST /recommendations` | 推薦 | recommendation | 架構師 |
-| `GET /routes/walk?from_lat=&from_lon=&to_lat=&to_lon=` | 步行路線，回解碼好的座標陣列（`[lon, lat]`） | gis | 後端 A |
-| `POST /chat` | LLM 對話 | agent | 架構師 |
+| `GET /health` | 服務與資料狀態（最新 GPS 時間） | — | 待定 |
+| `GET /stops/nearby?lat=&lon=&radius=` | 附近收運點 | gis | 待定 |
+| `GET /stops/{id}` | 單一收運點的每週時段 | gis | 待定 |
+| `GET /stops/{id}/eta?at=` | 單一收運點今天的 ETA（格式同 §4「ETA 結果」） | eta | 待定 |
+| `POST /recommendations` | 推薦 | recommendation | 待定 |
+| `GET /routes/walk?from_lat=&from_lon=&to_lat=&to_lon=` | 步行路線，回解碼好的座標陣列（`[lon, lat]`） | gis | 待定 |
+| `POST /chat` | LLM 對話 | agent | 待定 |
 
-- **API 分工（架構師決定 2026-11-22）：** 除了前端，3 個人各自負責幾支 API，從 HTTP 到背後的模組和測試整條做完。架構師第 1 週先把全部規格（`schemas.py`）和假資料定好；之後各自把自己那幾支換成真的。規格要改，先告訴架構師，因為前端也在用。
-- `/stops/{id}/eta` 讓後端 B 的 ETA 不用等推薦做完，就能自己測、自己 Demo；前端也能在收運點詳細頁直接顯示。
+- **API 分工（原則：架構師決定 2026-11-22；實際負責人待定，之後重新分配）：** 每支 API 由一個人負責，從 HTTP 到背後的模組和測試整條做完。架構師第 1 週先把全部規格（`schemas.py`）和假資料定好；之後各自把自己那幾支換成真的。規格要改，先告訴架構師，因為做 App 的人也在用。
+- `/stops/{id}/eta` 讓 ETA 不用等推薦做完，就能自己測、自己 Demo；App 也能在收運點詳細頁直接顯示。
 
 - 規格寫在 `backend/app/api/schemas.py`，FastAPI 自動產生 `/docs`（OpenAPI）頁面給前端看。
 - 第 1 週 API 先回**固定假資料**，前端照規格開工。
@@ -245,20 +250,22 @@ sequenceDiagram
 | 狀況 | 怎麼辦 |
 |---|---|
 | Valhalla 失敗或太慢（>5 秒） | 步行改用「直線距離 × 1.3 ÷ 1.2 m/s」，標 `fallback` |
-| 某車 GPS 超過 15 分鐘沒更新 | ETA `status = stale`，只用表定時間＋較寬範圍 |
-| 完全沒有 GPS | `schedule_only`，回答要說明「只有表定時間」 |
+| 某車 GPS 超過 15 分鐘沒更新 | ETA `status = stale`，改用歷史資料；沒有歷史才用表定時間 |
+| 完全沒有 GPS | 有歷史 → `historical`，回答說明「依過去到達時間估計」；沒有歷史 → `schedule_only`，說明「只有表定時間」 |
 | Claude API 失敗 | `/chat` 回錯誤；`/recommendations` 不受影響 |
 
-（數字 1.3、1.2 m/s、15 分鐘、5 秒都是起始值，放設定檔，後端 A、後端 B 之後依實測調整。）
+（數字 1.3、1.2 m/s、15 分鐘、5 秒都是起始值，放設定檔，之後依實測調整。）
 
 ## 8. 分工與 4 週里程碑
 
-| 週 | 前端 | 架構師 | 後端 A | 後端 B |
+**負責人：待定（之後重新分配）。** 架構師（決定與核准）= RyanYeh57；其他分工待定。
+
+| 週 | App | 推薦與對話、整合 | 找點、步行、部署主機 | GPS 與 ETA |
 |---|---|---|---|---|
 | **1** | App 骨架、地圖顯示底圖、照 `/docs` 接假資料；App 設定頁可改後端網址 | 骨架、Docker Compose、`schemas.py`、假資料 API | 資料表 + 匯入 84004 與座標；**在部署主機上裝好 Docker 與 Cloudflare Tunnel** | GPS 收集搬到部署主機；匯入歷史 GPS；**用歷史 GPS 確認 `d1`～`d7` 是不是星期一到日**（匯入不用等；第 2 週推薦前要有結論） |
 | **2** | 附近點列表、地圖標點、推薦畫面 | `recommend` 真邏輯 + 測試；串接前端 | `find_nearby_stops`、`walk_times`（Valhalla + 降級） | 到點判斷 → `stop_arrivals`；Schedule Baseline |
 | **3** | 步行路線畫線、資料時間與風險標示 | `/chat` + Claude tool calling | worker 進 Docker；`walk_route`；Tunnel 網址給前端實機測試 | 即時 ETA（歷史平均、距離／速度）+ 新鮮度 |
-| **4** | 對話畫面、Demo 彩排 | 整合、文件、Demo 腳本 | Demo 備援資料、修 bug | ETA 評估（MAE、RMSE、趕上率），只寫真的跑出來的數字 |
+| **4** | 對話畫面、Demo 彩排 | 整合、文件、Demo 腳本；**Demo 前檢查 84004 有沒有新版本**（`DESIGN.md` §11 第 11 點） | Demo 備援資料、修 bug | ETA 評估（MAE、RMSE、趕上率），只寫真的跑出來的數字；只用測試段資料（`DESIGN.md` §8.1） |
 
 **每週五**：大家把分支合進 `main`，跑一次「App → 後端 → 資料庫」整條流程。
 
@@ -280,4 +287,4 @@ sequenceDiagram
 - 各模組內部怎麼拆檔案、函式命名細節。
 - ORM model 的實際寫法、索引名稱。
 - 假資料的內容（只要符合 `schemas.py`）。
-- 「到點判斷」的半徑與停留條件（後端 B 依資料抽樣決定，寫進 `docs/research/`）。
+- 「到點判斷」的半徑與停留條件（依資料抽樣決定，寫進 `docs/research/`）。

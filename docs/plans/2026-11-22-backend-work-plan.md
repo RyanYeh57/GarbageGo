@@ -17,22 +17,17 @@
 
 ## 誰負責什麼
 
-| 角色 | 姓名（GitHub） | 負責 |
+架構師（決定與核准）= RyanYeh57；其他分工待定，之後重新分配。
+
+組員（GitHub）：[anjyuelee](https://github.com/anjyuelee)、[RyanYeh57](https://github.com/RyanYeh57)、[hobartXIII](https://github.com/hobartXIII)、[Ian1114](https://github.com/Ian1114)
+
+**API 分工**（第 1 週先全部做成假資料，之後各自換成真的）：
+
+| 工作範圍 | API | 負責人 |
 |---|---|---|
-| 前端 | [anjyuelee](https://github.com/anjyuelee) | Android App：地圖、畫面 |
-| 架構師 | [RyanYeh57](https://github.com/RyanYeh57) | 後端骨架、API 規格、推薦邏輯、對話（LLM）、整合與文件 |
-| 後端 A | [hobartXIII](https://github.com/hobartXIII) | 資料表、匯入資料、找附近收運點、步行時間、部署主機 |
-| 後端 B（RD） | [Ian1114](https://github.com/Ian1114) | GPS 收集、判斷車到了沒、預估到達時間（ETA）、評估 |
-
-> 文件裡寫「後端 A」就是 hobartXIII，「後端 B」就是 Ian1114。
-
-**API 分工**（第 1 週架構師先全部做成假資料，之後各自換成真的）：
-
-| 誰 | 負責的 API |
-|---|---|
-| 後端 A | `GET /stops/nearby`、`GET /stops/{id}`、`GET /routes/walk` |
-| 後端 B | `GET /health`、`GET /stops/{id}/eta` |
-| 架構師 | `POST /recommendations`、`POST /chat` |
+| 找點與步行 | `GET /stops/nearby`、`GET /stops/{id}`、`GET /routes/walk` | 待定 |
+| 健康檢查與 ETA | `GET /health`、`GET /stops/{id}/eta` | 待定 |
+| 推薦與對話 | `POST /recommendations`、`POST /chat` | 待定 |
 
 ## 4 週時程
 
@@ -45,14 +40,16 @@
 
 **每週五**：大家把分支合進 `main`，從 App 到資料庫整條跑一次。
 
-## 第 1 週：每個人的主要工作
+## 第 1 週：主要工作
 
-| 誰 | 做什麼 | 注意 |
+負責人：待定（之後重新分配）
+
+| 工作範圍 | 做什麼 | 注意 |
 |---|---|---|
-| 架構師 | 後端骨架 + 假資料 API | ✅ 完成（PR #10、#12） |
-| 前端 | App 骨架、地圖底圖、接假資料；設定頁可以改後端網址 | Tunnel 網址會變，所以要能改 |
-| 後端 A | 建資料表、匯入收運點和座標、架好部署主機 | ✅ 資料表、收運點已完成（架構師代做，2026-11-24）。**還要做：部署主機（Task 7）** |
-| 後端 B | **第一天**把 GPS 收集程式搬到部署主機；匯入舊 GPS；確認 `d1`～`d7` | ✅ 舊 GPS 匯入、`d1`～`d7` 已完成（架構師代做，2026-11-24）。**還要做：GPS 收集程式搬到部署主機（Task 7 Step 5）** |
+| 後端骨架 | 後端骨架 + 假資料 API | ✅ 完成（PR #10、#12） |
+| App | App 骨架、地圖底圖、接假資料；設定頁可以改後端網址 | Tunnel 網址會變，所以要能改 |
+| 資料表與部署主機 | 建資料表、匯入收運點和座標、架好部署主機 | ✅ 資料表、收運點已完成（架構師代做，2026-11-24）。**還要做：部署主機（Task 7）** |
+| GPS 與 ETA | **第一天**把 GPS 收集程式搬到部署主機；匯入舊 GPS；確認 `d1`～`d7` | ✅ 舊 GPS 匯入、`d1`～`d7` 已完成（架構師代做，2026-11-24）。**還要做：GPS 收集程式搬到部署主機（Task 7 Step 5）** |
 
 ## 已經決定的事
 
@@ -82,16 +79,16 @@
 |---|---|
 | 部署主機重開機或斷網，GPS 和 Demo 一起停 | 開機自動啟動、關閉睡眠、每天看 `/health`、每週備份；Demo 準備歷史資料備援 |
 | Tunnel 網址重開就變 | App 設定頁可以改網址 |
-| `d1`～`d7` 對應錯，推薦的日子就錯 | 第 1 週後端 B 用 GPS 確認；它排在後端 B 工作的最後，慢了週五回報 |
+| `d1`～`d7` 對應錯，推薦的日子就錯 | ✅ 已用 GPS 確認（2026-11-24，見 `docs/research/opendata-api-check.md` §10.1） |
 
-## 還沒決定（架構師要補）
+## 還沒決定
 
 - [x] 四位組員姓名（見「誰負責什麼」）
 - [ ] Demo 日期
 - [ ] 誰的電腦當部署主機
-- [x] 問後端 B：舊 GPS 程式有沒有記下每份快照的抓取時間（有：舊 SQLite `garbage.db` 的 `snapshots.fetched_at`，含 `+08:00`）
+- [x] 問寫舊 GPS 程式的人：舊 GPS 程式有沒有記下每份快照的抓取時間（有：舊 SQLite `garbage.db` 的 `snapshots.fetched_at`，含 `+08:00`）
 - [ ] 申請 TGOS（補剩下約 874 個沒座標的收運點，不擋 Demo）
-- [ ] 前端寄信問國土測繪中心底圖授權（放大到 16 級以上、用在 App）
+- [ ] 寄信問國土測繪中心底圖授權（放大到 16 級以上、用在 App）（負責人：待定）
 
 ## 文件地圖
 

@@ -197,28 +197,25 @@ GarbageGo/
 
 ## Installation
 
-目前專案仍處於 Proposal 與資料可行性分析階段，尚未提供正式可執行服務，因此暫無完整安裝指令。
+用 Docker 跑資料庫與後端。需要 Git、Docker Desktop；要匯入資料或跑測試才需要 Python 3.12。
 
-正式實作後，本節將補充：
-
-- 環境需求。
-- Python、Node.js 或其他必要工具版本。
-- 相依套件安裝方式。
-- PostgreSQL / PostGIS 設定方式。
-- `.env` 設定方式。
+完整步驟（含 `.env` 設定、常見問題）見 **[Docker 使用說明](docs/docker-guide.md)**。
 
 ## How to Run
 
-目前尚未提供可執行的 Backend、Android App 或資料匯入服務。
+```powershell
+copy .env.example .env               # 填帳號密碼，見 docs/docker-guide.md §3
+docker compose up -d --build
+curl.exe http://127.0.0.1:8000/health
+```
 
-正式實作後，本節將補充：
+| 要做什麼 | 看哪裡 |
+|---|---|
+| 匯入開發資料 | `docs/docker-guide.md` §4 |
+| 上線測試（公開 `https` 網址） | `docs/docker-guide.md` §5 |
+| 部署主機設定 | `docs/architecture/deploy-host.md` |
 
-1. 建立資料庫。
-2. 設定 `.env`。
-3. 匯入官方與歷史資料。
-4. 啟動 Backend API。
-5. 建置並安裝 Android App。
-6. 執行測試與驗證流程。
+Android App 尚未實作。
 
 ## Demo
 

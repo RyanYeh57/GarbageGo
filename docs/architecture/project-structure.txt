@@ -6,6 +6,7 @@ GarbageGo/
 ├── .gitignore
 │
 ├── docs/
+│   ├── docker-guide.md    # 組員版 Docker 使用說明（啟動、匯入資料、上線測試、常見問題）
 │   ├── plans/             # Superpowers 開發計畫
 │   ├── specs/             # 需求規格
 │   └── architecture/      # 架構設計文件

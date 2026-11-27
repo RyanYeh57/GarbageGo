@@ -364,7 +364,7 @@ Update documentation and implementation status
 | Data Ingestion：84004 + 座標 | Verified | 20,090 點、19,216 有座標、81 筆 `suspect`（2026-11-24 實跑，見 `docs/research/geocoding-local-match-trial.md` §8）。座標本身仍未人工核對 |
 | Data Ingestion：歷史 GPS | Verified | 1,710,839 筆，2026-10-05～2026-11-19（2026-11-24 實跑，見 `docs/research/opendata-api-check.md` §3）。即時收集 worker 為 Planned（第 3 週） |
 | `d1`～`d7` 星期對應 | Verified（部分推論） | = 星期一～日（GPS 驗證，見 `opendata-api-check.md` §10.1）。`d2`、`d4`、`d5`、`d6` 有直接證據；`d1` 證據弱；`d3`、`d7` 無法直接驗證，是推論 |
-| Deploy Host + Tunnel | Planned | Task 7，需要實體電腦 |
+| Deploy Host + Tunnel | Implemented / Unverified | `docker-compose.yml` 的 `tunnel` 服務（Quick Tunnel，`--profile tunnel`）。2026-11-25 在試用主機測通 `https` `/health`（電腦端＋手機行動網路）；重開機測試與備份要等正式部署主機（試用主機設定不能改）。操作見 `docs/architecture/deploy-host.md` |
 | GIS Engine | Planned | 尚未實作 |
 | ETA Engine | Planned | 尚未選型或訓練 |
 | Recommendation Engine | Planned | 僅有概念性規則 |

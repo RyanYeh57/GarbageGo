@@ -6,12 +6,14 @@ GarbageGo/
 ├── .gitignore
 │
 ├── docs/
+│   ├── docker-guide.md    # 組員版 Docker 使用說明（啟動、匯入資料、上線測試、常見問題）
 │   ├── plans/             # Superpowers 開發計畫
 │   ├── specs/             # 需求規格
 │   └── architecture/      # 架構設計文件
 │       ├── project-structure.txt   # 本檔：專案資料夾架構
 │       ├── modular-monolith.md     # 初版模組化單體架構草稿
-│       └── backend-architecture.md # v1 實作版後端架構（模組介面、資料表、API、部署）
+│       ├── backend-architecture.md # v1 實作版後端架構（模組介面、資料表、API、部署）
+│       └── deploy-host.md          # 部署主機操作手冊（Cloudflare Tunnel、重開機、備份）
 │
 ├── .agents/
 │   └── skills/            # Codex 讀取的技能（Claude 不讀這裡）

@@ -8,16 +8,34 @@ services:
       - ./db/init:/docker-entrypoint-initdb.d:ro
     ports:
       - "127.0.0.1:5432:5432"
+    # TCP check: during first-time init Postgres only listens on a socket, so this
+    # stays unhealthy until the real server (and the init scripts) are ready.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 30
 
   api:
     build: ./backend
-    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --no-access-log"
     restart: unless-stopped
     env_file: .env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "127.0.0.1:8000:8000"
+
+  # Public https URL via Cloudflare Quick Tunnel (no account, no fixed IP).
+  # Opt-in: docker compose --profile tunnel up -d
+  # The trycloudflare.com URL changes every time this container restarts.
+  tunnel:
+    image: cloudflare/cloudflared:2026.10.7
+    command: tunnel --no-autoupdate --url http://api:8000
+    restart: unless-stopped
+    depends_on:
+      - api
+    profiles: ["tunnel"]
 
 volumes:
   pgdata:
